@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
         mushafFont: 'hafiz-osman', // 'hafiz-osman', 'ahmed-husrev', 'hasan-riza', 'osman-taha', 'diyanet-digital'
         imlaMode: 'diyanet',   // 'diyanet' (Temiz Türk/Diyanet İmlâsı), 'uthmani' (Medine Resm-i Osmanî)
-        facsimileType: 'madani', // 'madani' (Medine KFGQPC), 'tajweed', 'warsh'
+        facsimileType: 'diyanet-pdf', // 'diyanet-pdf' (Diyanet Resmi Orijinal PDF), 'madani', 'tajweed', 'warsh'
         chainHaslama: {
             targetRotation: 1,
             fromJuz: 1,
@@ -115,10 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const badgePageNum = document.getElementById('badge-page-num');
 
     const mushafImage = document.getElementById('mushaf-image');
+    const mushafDiyanetCanvas = document.getElementById('mushaf-diyanet-canvas');
     const facsimileJuzInfo = document.getElementById('facsimile-juz-info');
     const facsimileSurahInfo = document.getElementById('facsimile-surah-info');
     const facsimilePageLabel = document.getElementById('facsimile-page-label');
     const facsimileLoadingSpinner = document.getElementById('facsimile-loading-spinner');
+    const facsimileLoaderText = document.getElementById('facsimile-loader-text');
     const selectFacsimileEdition = document.getElementById('select-facsimile-edition');
 
     // Zoom & Tema Elemanları
@@ -473,23 +475,120 @@ document.addEventListener('DOMContentLoaded', () => {
             sheetLessonTag.style.borderColor = isHam ? 'var(--emerald-primary)' : 'var(--gold-primary)';
         }
 
-        // Taranmış Mushaf Görseli
-        const facType = state.facsimileType || 'diyanet';
-        if (facsimileLoadingSpinner) facsimileLoadingSpinner.style.display = 'flex';
-        mushafImage.style.opacity = '0.3';
-        mushafImage.onload = () => {
-            if (facsimileLoadingSpinner) facsimileLoadingSpinner.style.display = 'none';
-            mushafImage.style.opacity = '1';
-        };
-        mushafImage.onerror = () => {
-            mushafImage.src = QURAN_DATA.getFallbackPageImageUrl(pageNumber, facType);
-            if (facsimileLoadingSpinner) facsimileLoadingSpinner.style.display = 'none';
-            mushafImage.style.opacity = '1';
-        };
-        mushafImage.src = QURAN_DATA.getPageImageUrl(pageNumber, facType);
+        // Taranmış Mushaf Görseli / Diyanet Resmi PDF Render
+        await renderFacsimilePage(pageNumber);
 
         // Ayetleri API'den veya Önbellekten Çek
         await fetchAndRenderMushafPage(pageNumber);
+    }
+
+    let diyanetPdfDoc = null;
+    let isPdfLoading = false;
+
+    async function getDiyanetPdf() {
+        if (diyanetPdfDoc) return diyanetPdfDoc;
+        if (isPdfLoading) {
+            let tries = 0;
+            while (isPdfLoading && tries < 30) {
+                await new Promise(r => setTimeout(r, 100));
+                tries++;
+            }
+            if (diyanetPdfDoc) return diyanetPdfDoc;
+        }
+
+        if (typeof pdfjsLib === 'undefined') {
+            console.warn('[PDF.js] pdfjsLib kütüphanesi hazır değil');
+            return null;
+        }
+
+        try {
+            isPdfLoading = true;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const loadingTask = pdfjsLib.getDocument({
+                url: './diyanet_mushaf.pdf',
+                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                cMapPacked: true
+            });
+            diyanetPdfDoc = await loadingTask.promise;
+            console.log('[PDF.js] Diyanet Resmi 15 Satır Mushaf PDF yüklendi! Toplam Sayfa:', diyanetPdfDoc.numPages);
+            isPdfLoading = false;
+            return diyanetPdfDoc;
+        } catch (err) {
+            isPdfLoading = false;
+            console.error('[PDF.js] Diyanet PDF yüklenirken hata:', err);
+            return null;
+        }
+    }
+
+    async function renderFacsimilePage(pageNumber) {
+        const facType = state.facsimileType || 'diyanet-pdf';
+        const canvas = mushafDiyanetCanvas || document.getElementById('mushaf-diyanet-canvas');
+        const img = mushafImage || document.getElementById('mushaf-image');
+        const spinner = facsimileLoadingSpinner || document.getElementById('facsimile-loading-spinner');
+        const spinnerText = facsimileLoaderText || document.getElementById('facsimile-loader-text');
+
+        if (facType === 'diyanet-pdf') {
+            if (img) img.style.display = 'none';
+            if (canvas) canvas.style.display = 'block';
+            if (spinner) {
+                if (spinnerText) spinnerText.textContent = 'Diyanet resmi Mushaf sayfası yükleniyor...';
+                spinner.style.display = 'flex';
+            }
+
+            const doc = await getDiyanetPdf();
+            if (!doc) {
+                // Fallback to Medine image if PDF fails
+                if (canvas) canvas.style.display = 'none';
+                if (img) {
+                    img.style.display = 'block';
+                    img.src = QURAN_DATA.getPageImageUrl(pageNumber, 'madani');
+                }
+                if (spinner) spinner.style.display = 'none';
+                return;
+            }
+
+            try {
+                // Mushaf 1. sayfa = PDF 2. sayfa (Fâtiha)
+                // Mushaf 474. sayfa = PDF 475. sayfa
+                const pdfPageNum = Math.min(Math.max(pageNumber + 1, 1), doc.numPages);
+                const page = await doc.getPage(pdfPageNum);
+
+                const scale = window.devicePixelRatio && window.devicePixelRatio > 1.5 ? 2.0 : 1.7;
+                const viewport = page.getViewport({ scale });
+
+                if (canvas) {
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                }
+                if (spinner) spinner.style.display = 'none';
+            } catch (renderErr) {
+                console.error('[PDF.js] Sayfa render hatası:', renderErr);
+                if (spinner) spinner.style.display = 'none';
+            }
+        } else {
+            // Medine, Tecvidli veya Varş Görseli
+            if (canvas) canvas.style.display = 'none';
+            if (img) {
+                img.style.display = 'block';
+                if (spinner) {
+                    if (spinnerText) spinnerText.textContent = 'Mushaf sayfası yükleniyor...';
+                    spinner.style.display = 'flex';
+                }
+                img.style.opacity = '0.3';
+                img.onload = () => {
+                    if (spinner) spinner.style.display = 'none';
+                    img.style.opacity = '1';
+                };
+                img.onerror = () => {
+                    img.src = QURAN_DATA.getFallbackPageImageUrl(pageNumber, facType);
+                    if (spinner) spinner.style.display = 'none';
+                    img.style.opacity = '1';
+                };
+                img.src = QURAN_DATA.getPageImageUrl(pageNumber, facType);
+            }
+        }
     }
 
     async function fetchAndRenderMushafPage(pageNumber) {
@@ -990,10 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectFacsimileEdition) {
             selectFacsimileEdition.addEventListener('change', (e) => {
                 state.facsimileType = e.target.value;
-                const facType = state.facsimileType;
-                if (facsimileLoadingSpinner) facsimileLoadingSpinner.style.display = 'flex';
-                mushafImage.style.opacity = '0.3';
-                mushafImage.src = QURAN_DATA.getPageImageUrl(state.currentPage, facType);
+                renderFacsimilePage(state.currentPage);
             });
         }
 
