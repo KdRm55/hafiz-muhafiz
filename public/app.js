@@ -563,8 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const page = await doc.getPage(pdfPageNum);
 
                 const scale = window.devicePixelRatio && window.devicePixelRatio > 1.5 ? 2.0 : 1.7;
-                // Diyanet PDF sayfaları yatay tarandığından dik (portrait) dikey konuma 90 derece döndürülür
-                const viewport = page.getViewport({ scale, rotation: 90 });
+                // Diyanet PDF sayfalarını tam dik (portrait) konuma getirmek için 270 derece döndürülür
+                const viewport = page.getViewport({ scale, rotation: 270 });
 
                 if (canvas) {
                     canvas.width = viewport.width;
