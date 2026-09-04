@@ -4,7 +4,6 @@
   "description": "Hafız Muhafız — Osmanlı ve Türk Usulü Hafızlık & Dinleme Asistanı",
   "main": "index.html",
   "scripts": {
-    "build": "echo Web build ready",
     "cap:add": "cap add android",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android"
