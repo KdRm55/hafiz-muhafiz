@@ -2263,3 +2263,81 @@ kbd {
     font-weight: 800;
 }
 
+/* ==========================================================================
+   Yeni Kurgu & Modüler Tasarım Sınıfları (Okuyucu Değiştir, Strateji vb.)
+   ========================================================================== */
+.deck-reciter-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(14, 38, 28, 0.75);
+    border: 1px solid var(--border-gold);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.deck-reciter-btn:hover {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 14px var(--gold-glow);
+    transform: translateY(-1px);
+}
+
+.reciter-badge-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.reciter-tag {
+    font-size: 0.60rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--gold-bright);
+}
+
+.reciter-curr-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+}
+
+.mode-toggle-btn.gold-strategy-btn {
+    border-color: rgba(212, 175, 55, 0.5);
+    color: var(--gold-bright);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.mode-toggle-btn.gold-strategy-btn:hover,
+.mode-toggle-btn.gold-strategy-btn.active {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 14px var(--gold-glow);
+}
+
+.strategy-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.strategy-sub {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-weight: normal;
+    margin-left: auto;
+}
+
+.studio-nav-box {
+    margin-left: auto;
+}
+
+
