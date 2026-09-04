@@ -432,10 +432,10 @@
                 <!-- Sol: 3 Net Görünüm Sekmesi -->
                 <div class="view-tabs">
                     <button id="tab-mushaf-live" class="view-tab active" title="Diyanet İşleri Başkanlığı 15 Satır Standart Âyet-Berkenar Mushafı">
-                        <i class="fa-solid fa-book-quran"></i> <span>Diyanet 15 Satır Mushaf</span>
+                        <i class="fa-solid fa-book-quran"></i> <span>Diyanet 15 Satır (Asıl)</span>
                     </button>
-                    <button id="tab-mushaf-facsimile" class="view-tab" title="Diyanet Orijinal Mushaf Tıpkıbasımı">
-                        <i class="fa-solid fa-book-open"></i> <span>Diyanet Mushaf Baskısı</span>
+                    <button id="tab-mushaf-facsimile" class="view-tab" title="Medine-i Münevvere Taranmış Fotoğraf Baskısı">
+                        <i class="fa-solid fa-image"></i> <span>Medine Tıpkıbasımı (Foto)</span>
                     </button>
                     <button id="tab-ayah-view" class="view-tab" title="Geniş Hatlı Ayet & Diyanet Meali Kartları">
                         <i class="fa-solid fa-list-check"></i> <span>Ayet & Meal Kartları</span>
@@ -552,22 +552,25 @@
                 </div>
             </div>
 
-            <!-- ================= GÖRÜNÜM 2: Faksimile Mushaf Baskısı ================= -->
+            <!-- ================= GÖRÜNÜM 2: Medine & Tecvidli Fotoğraf Baskısı (Faksimile) ================= -->
             <div id="container-mushaf-facsimile" class="mushaf-container" style="display:none;">
                 <div class="mushaf-frame">
                     <div class="mushaf-header-info">
                         <span id="facsimile-juz-info">24. Cüz</span>
                         <div class="facsimile-edition-picker">
-                            <label for="select-facsimile-edition"><i class="fa-solid fa-book-open"></i> Baskı Ekolü:</label>
+                            <label for="select-facsimile-edition"><i class="fa-solid fa-camera"></i> Fotoğraf Baskısı:</label>
                             <select id="select-facsimile-edition" class="pill-select-sm">
-                                <option value="diyanet" selected>Diyanet İşleri Başkanlığı (15 Satır Âyet-Berkenar)</option>
-                                <option value="madani">Medine-i Münevvere (Hattat Osman Taha)</option>
-                                <option value="tajweed">Renkli Tecvidli Mushaf</option>
-                                <option value="warsh">Varş Rivayeti Mushafı</option>
+                                <option value="madani" selected>Medine-i Münevvere (Hattat Osman Taha)</option>
+                                <option value="tajweed">Renkli Tecvidli Medine Baskısı</option>
+                                <option value="warsh">Varş Rivayeti Medine Baskısı</option>
                             </select>
                         </div>
                         <span id="facsimile-surah-info">Fussilet Suresi</span>
                         <span id="facsimile-page-label">Sayfa 474</span>
+                    </div>
+                    <!-- Bilgilendirme Notu -->
+                    <div style="background:rgba(212,175,55,0.1); border-bottom:1px solid rgba(212,175,55,0.25); padding:8px 14px; font-size:0.8rem; color:var(--gold-bright); text-align:center;">
+                        <i class="fa-solid fa-circle-info"></i> Bu sekme Medine KFGQPC fotoğraf baskılarını gösterir. <strong>Türkiye Diyanet İşleri Başkanlığı 15 Satır Standart Mushafı</strong> için üstteki <strong>"Diyanet 15 Satır (Asıl)"</strong> sekmesini açınız.
                     </div>
                     <div class="mushaf-img-wrapper" id="mushaf-img-wrapper">
                         <div id="facsimile-loading-spinner" class="facsimile-loader">

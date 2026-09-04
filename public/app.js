@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
         mushafFont: 'hafiz-osman', // 'hafiz-osman', 'ahmed-husrev', 'hasan-riza', 'osman-taha', 'diyanet-digital'
         imlaMode: 'diyanet',   // 'diyanet' (Temiz Türk/Diyanet İmlâsı), 'uthmani' (Medine Resm-i Osmanî)
-        facsimileType: 'diyanet', // 'diyanet' (Diyanet İşleri Başkanlığı 15 Satır), 'madani', 'tajweed', 'warsh'
+        facsimileType: 'madani', // 'madani' (Medine KFGQPC), 'tajweed', 'warsh'
         chainHaslama: {
             targetRotation: 1,
             fromJuz: 1,
@@ -254,6 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (viewWorkspace) viewWorkspace.style.display = 'block';
         const audioDeck = document.querySelector('.audio-deck');
         if (audioDeck) audioDeck.style.display = 'block';
+
+        // Her zaman birincil olarak Diyanet 15 Satır İnteraktif Mushaf'ı aç
+        setView('live');
 
         if (mode === 'has' || mode === 'chain-has') {
             setMode('chain-has');
