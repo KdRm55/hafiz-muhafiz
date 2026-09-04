@@ -6,16 +6,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Uygulama Durumu (State)
     const state = {
-        currentJuz: 24,       // Varsayılan: 24. Cüz (Kullanıcı örneği)
-        currentRotation: 8,   // Varsayılan: 8. Dönüş (Kullanıcı örneği)
+        currentJuz: 24,       // Varsayılan: 24. Cüz
+        currentRotation: 8,   // Varsayılan: 8. Dönüş
         currentMode: 'ham',   // 'ham', 'has', 'full'
-        activeView: 'live',   // 'live' (İnteraktif Mushaf), 'facsimile', 'ayah'
+        activeView: 'studio', // 'studio' (Diyanet Orijinal Mushafı & İnteraktif), 'ayah' (Ayet Kartları)
         currentPage: 474,
         zoomLevel: 100,       // 80% .. 150%
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
-        mushafFont: 'hafiz-osman', // 'hafiz-osman', 'ahmed-husrev', 'hasan-riza', 'osman-taha', 'diyanet-digital'
-        imlaMode: 'diyanet',   // 'diyanet' (Temiz Türk/Diyanet İmlâsı), 'uthmani' (Medine Resm-i Osmanî)
-        facsimileType: 'diyanet-pdf', // 'diyanet-pdf' (Diyanet Resmi Orijinal PDF), 'madani', 'tajweed', 'warsh'
+        mushafFont: 'hafiz-osman',
+        imlaMode: 'diyanet',   // 'diyanet' (Temiz Türk/Diyanet İmlâsı), 'uthmani'
+        facsimileType: 'diyanet-pdf', // 'diyanet-pdf' (Diyanet Resmi Orijinal PDF), 'madani', 'tajweed'
+        isHafizMaskActive: false,
         chainHaslama: {
             targetRotation: 1,
             fromJuz: 1,
@@ -94,31 +95,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const chainItemsGrid = document.getElementById('chain-items-grid');
     const chainModalTitle = document.getElementById('chain-modal-title');
 
-    const tabMushafLive = document.getElementById('tab-mushaf-live');
-    const tabMushafFacsimile = document.getElementById('tab-mushaf-facsimile');
+    const tabMushafStudio = document.getElementById('tab-mushaf-studio');
     const tabAyahView = document.getElementById('tab-ayah-view');
 
-    const containerMushafLive = document.getElementById('container-mushaf-live');
-    const containerMushafFacsimile = document.getElementById('container-mushaf-facsimile');
+    const containerMushafStudio = document.getElementById('container-mushaf-studio');
     const containerAyahView = document.getElementById('container-ayah-view');
 
     const mushafScaleWrapper = document.getElementById('mushaf-scale-wrapper');
-    const mushafTextFlow = document.getElementById('mushaf-text-flow');
     const mushafJuzTitle = document.getElementById('mushaf-juz-title');
+    const mushafHizbTitle = document.getElementById('mushaf-hizb-title');
     const mushafSurahTitle = document.getElementById('mushaf-surah-title');
     const mushafPageNumber = document.getElementById('mushaf-page-number');
-    const rosetteJuzNum = document.getElementById('rosette-juz-num');
-    const sheetLessonTag = document.getElementById('sheet-lesson-tag');
+
+    const mushafDiyanetCanvas = document.getElementById('mushaf-diyanet-canvas');
+    const mushafImage = document.getElementById('mushaf-image');
+    const mushafInteractiveOverlay = document.getElementById('mushaf-interactive-overlay');
+    const mushafMaskOverlay = document.getElementById('mushaf-mask-overlay');
+    const btnToggleHafizMask = document.getElementById('btn-toggle-hafiz-mask');
+
+    const activeAyahBanner = document.getElementById('active-ayah-banner');
+    const activeAyahRef = document.getElementById('active-ayah-ref');
+    const activeAyahMeal = document.getElementById('active-ayah-meal');
+    const btnBannerMealDrawer = document.getElementById('btn-banner-meal-drawer');
 
     const btnPrevPage = document.getElementById('btn-prev-page');
     const btnNextPage = document.getElementById('btn-next-page');
     const badgePageNum = document.getElementById('badge-page-num');
 
-    const mushafImage = document.getElementById('mushaf-image');
-    const mushafDiyanetCanvas = document.getElementById('mushaf-diyanet-canvas');
-    const facsimileJuzInfo = document.getElementById('facsimile-juz-info');
-    const facsimileSurahInfo = document.getElementById('facsimile-surah-info');
-    const facsimilePageLabel = document.getElementById('facsimile-page-label');
     const facsimileLoadingSpinner = document.getElementById('facsimile-loading-spinner');
     const facsimileLoaderText = document.getElementById('facsimile-loader-text');
     const selectFacsimileEdition = document.getElementById('select-facsimile-edition');
@@ -257,8 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const audioDeck = document.querySelector('.audio-deck');
         if (audioDeck) audioDeck.style.display = 'block';
 
-        // Her zaman birincil olarak Diyanet 15 Satır İnteraktif Mushaf'ı aç
-        setView('live');
+        // Her zaman birincil olarak Diyanet Orijinal İnteraktif Mushaf'ı aç
+        setView('studio');
 
         if (mode === 'has' || mode === 'chain-has') {
             setMode('chain-has');
@@ -453,32 +456,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     async function loadPageData(pageNumber) {
         state.currentPage = pageNumber;
-        badgePageNum.textContent = `Sayfa ${pageNumber}`;
-        mushafPageNumber.textContent = `Sayfa ${pageNumber}`;
-        facsimilePageLabel.textContent = `Sayfa ${pageNumber}`;
+        if (badgePageNum) badgePageNum.textContent = `Sayfa ${pageNumber}`;
+        if (mushafPageNumber) mushafPageNumber.textContent = `Sayfa ${pageNumber}`;
 
         const juzObj = QURAN_DATA.getJuzByPage(pageNumber);
-        mushafJuzTitle.textContent = `${juzObj.name}`;
-        facsimileJuzInfo.textContent = `${juzObj.name}`;
-        rosetteJuzNum.textContent = juzObj.juz;
-
-        if (state.currentMode === 'chain-has') {
-            sheetLessonTag.textContent = `${state.chainHaslama.targetRotation}. DÖNÜŞ HASLAMA (${juzObj.juz}. CÜZ)`;
-            sheetLessonTag.style.background = 'linear-gradient(135deg, #4d3a0e, #291c03)';
-            sheetLessonTag.style.color = 'var(--gold-bright)';
-            sheetLessonTag.style.borderColor = 'var(--gold-primary)';
-        } else {
-            const isHam = pageNumber === state.lesson.hamPage;
-            sheetLessonTag.textContent = isHam ? 'HAM DERS' : 'HASLAMA';
-            sheetLessonTag.style.background = isHam ? 'var(--emerald-dark)' : '#4d3a0e';
-            sheetLessonTag.style.color = isHam ? 'var(--emerald-primary)' : 'var(--gold-bright)';
-            sheetLessonTag.style.borderColor = isHam ? 'var(--emerald-primary)' : 'var(--gold-primary)';
+        if (mushafJuzTitle) mushafJuzTitle.innerHTML = `<i class="fa-solid fa-diamond"></i> ${juzObj.name}`;
+        if (mushafHizbTitle) {
+            const hizbNum = Math.ceil(pageNumber / 10);
+            mushafHizbTitle.textContent = `${hizbNum}. Hizb`;
         }
 
-        // Taranmış Mushaf Görseli / Diyanet Resmi PDF Render
+        // Sure Başlığı
+        const surah = QURAN_DATA.getSurahByPage ? QURAN_DATA.getSurahByPage(pageNumber) : (QURAN_DATA.surahs.find(s => pageNumber >= s.startPage) || QURAN_DATA.surahs[0]);
+        if (mushafSurahTitle && surah) {
+            mushafSurahTitle.textContent = surah.nameAr ? `سُورَةُ ${surah.nameAr} (${surah.nameTr})` : `${surah.nameTr} Suresi`;
+        }
+
+        // 1. Taranmış Mushaf Görseli / Diyanet Resmi PDF Render
         await renderFacsimilePage(pageNumber);
 
-        // Ayetleri API'den veya Önbellekten Çek
+        // 2. Ayetleri API'den veya Önbellekten Çekip İnteraktif Katmanı Oluştur
         await fetchAndRenderMushafPage(pageNumber);
     }
 
@@ -531,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (img) img.style.display = 'none';
             if (canvas) canvas.style.display = 'block';
             if (spinner) {
-                if (spinnerText) spinnerText.textContent = 'Diyanet resmi Mushaf sayfası yükleniyor...';
+                if (spinnerText) spinnerText.textContent = 'Diyanet resmi Mushaf sayfası hazırlanıyor...';
                 spinner.style.display = 'flex';
             }
 
@@ -569,17 +566,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     await page.render({ canvasContext: ctx, viewport }).promise;
                 }
                 if (spinner) spinner.style.display = 'none';
+
+                // Sayfa render olunca interaktif katmanı ve maskeleri senkronize et
+                if (state.pageAyahs && state.pageAyahs.length > 0) {
+                    buildDiyanetInteractiveOverlay(state.pageAyahs);
+                }
             } catch (renderErr) {
                 console.error('[PDF.js] Sayfa render hatası:', renderErr);
                 if (spinner) spinner.style.display = 'none';
             }
         } else {
-            // Medine, Tecvidli veya Varş Görseli
+            // Medine, Tecvidli Görseli
             if (canvas) canvas.style.display = 'none';
             if (img) {
                 img.style.display = 'block';
                 if (spinner) {
-                    if (spinnerText) spinnerText.textContent = 'Mushaf sayfası yükleniyor...';
+                    if (spinnerText) spinnerText.textContent = 'Mushaf sayfası hazırlanıyor...';
                     spinner.style.display = 'flex';
                 }
                 img.style.opacity = '0.3';
@@ -598,12 +600,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchAndRenderMushafPage(pageNumber) {
-        mushafTextFlow.innerHTML = '<div style="text-align:center; padding:50px; font-size:1.2rem; color:var(--gold-primary);"><i class="fa-solid fa-spinner fa-spin"></i> Ayetler yükleniyor...</div>';
-
         const cacheKey = `${pageNumber}_${state.imlaMode}`;
         if (state.cache[cacheKey]) {
             state.pageAyahs = state.cache[cacheKey];
-            buildInteractiveMushafPage(state.pageAyahs);
+            buildDiyanetInteractiveOverlay(state.pageAyahs);
             renderAyahsView(state.pageAyahs);
             renderDrawerAyahs(state.pageAyahs);
             setupAudioQueue();
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (offlineAyahs && offlineAyahs.length > 0) {
                     state.cache[cacheKey] = offlineAyahs;
                     state.pageAyahs = offlineAyahs;
-                    buildInteractiveMushafPage(offlineAyahs);
+                    buildDiyanetInteractiveOverlay(offlineAyahs);
                     renderAyahsView(offlineAyahs);
                     renderDrawerAyahs(offlineAyahs);
                     setupAudioQueue();
@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.offlineEngine) {
                     window.offlineEngine.savePage(pageNumber, state.imlaMode, ayahs);
                 }
-                buildInteractiveMushafPage(ayahs);
+                buildDiyanetInteractiveOverlay(ayahs);
                 renderAyahsView(ayahs);
                 renderDrawerAyahs(ayahs);
                 setupAudioQueue();
@@ -691,68 +691,213 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         state.pageAyahs = ayahs;
-        buildInteractiveMushafPage(ayahs);
+        buildDiyanetInteractiveOverlay(ayahs);
         renderAyahsView(ayahs);
         renderDrawerAyahs(ayahs);
         setupAudioQueue();
     }
 
     /**
-     * Orijinal 15-Satır Mushaf Sayfasını İnşa Eder (Hafız Nuru Standardı)
+     * Diyanet 15-Satır Orijinal Mushafı Üzerinde İnteraktif Katmanı İnşa Eder
      */
-    function buildInteractiveMushafPage(ayahs) {
-        mushafTextFlow.innerHTML = '';
+    function buildDiyanetInteractiveOverlay(ayahs) {
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (!overlay) return;
+        overlay.innerHTML = '';
         if (!ayahs || ayahs.length === 0) return;
 
         // Başlıkta sure adı
-        mushafSurahTitle.textContent = `${ayahs[0].surahNameTr} Suresi`;
-        facsimileSurahInfo.textContent = `${ayahs[0].surahNameTr} Suresi`;
+        if (mushafSurahTitle && ayahs[0]) {
+            mushafSurahTitle.textContent = ayahs[0].surahNameAr ? `سُورَةُ ${ayahs[0].surahNameAr} (${ayahs[0].surahNameTr})` : `${ayahs[0].surahNameTr} Suresi`;
+        }
 
-        let currentSurahNumber = null;
+        // 15 satırlık Diyanet standardı satır dağılımı
+        const totalLines = 15;
+        const totalChars = ayahs.reduce((sum, a) => sum + (a.textArabic ? a.textArabic.length : 1), 0);
 
-        ayahs.forEach((ayah, index) => {
-            // Yeni Sure Başlığı ve Besmele Gerekli mi?
-            if (ayah.ayahNumber === 1 || (currentSurahNumber !== null && currentSurahNumber !== ayah.surahNumber)) {
-                const headerPlate = document.createElement('div');
-                headerPlate.className = 'surah-header-plate';
-                headerPlate.innerHTML = `<div class="surah-title-arabic">${ayah.surahNameTr} Sûresi <span style="font-size:0.8em; opacity:0.85; margin-right:8px;">(سُورَةُ ${ayah.surahNameAr})</span></div>`;
-                mushafTextFlow.appendChild(headerPlate);
+        let lineAyahMap = [];
+        let currentLine = 0;
 
-                // Tevbe Suresi (9) hariç Besmele ekle
-                if (ayah.surahNumber !== 9 && ayah.surahNumber !== 1) {
-                    const besmele = document.createElement('div');
-                    besmele.className = 'besmele-banner';
-                    besmele.textContent = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-                    mushafTextFlow.appendChild(besmele);
-                }
+        ayahs.forEach((ayah, idx) => {
+            const charLen = ayah.textArabic ? ayah.textArabic.length : 1;
+            const lineSpan = Math.max(1, Math.round((charLen / totalChars) * totalLines));
+            for (let l = 0; l < lineSpan && currentLine < totalLines; l++) {
+                lineAyahMap.push(idx);
+                currentLine++;
             }
-            currentSurahNumber = ayah.surahNumber;
-
-            // Ayet Parçası
-            const ayahSpan = document.createElement('span');
-            ayahSpan.className = `mushaf-ayah ${index === 0 ? 'playing-ayah' : ''}`;
-            ayahSpan.id = `mushaf-ayah-${index}`;
-            ayahSpan.dataset.index = index;
-
-            // Ayet Metni ve Gülü (Kelimeleri interaktif etiketlerle sar)
-            const words = (ayah.textArabic || '').trim().split(/\s+/);
-            const wordsHtml = words.map((w, wIdx) => `<span class="mushaf-word" data-word-idx="${wIdx}">${w}</span>`).join(' ');
-
-            ayahSpan.innerHTML = `
-                ${wordsHtml}
-                <span class="ayah-rosette">۝<span class="rosette-num" style="font-family:var(--font-heading); font-size:0.44em; font-weight:800;">${ayah.ayahNumber}</span></span>
-            `;
-
-            // Tıklayınca Dinlemeyi Başlat ve Popover Göster
-            ayahSpan.addEventListener('click', (e) => {
-                showAyahPopover(e, index);
-                window.audioEngine.jumpToAyah(index);
-            });
-
-            mushafTextFlow.appendChild(ayahSpan);
         });
 
+        while (lineAyahMap.length < totalLines) {
+            lineAyahMap.push(ayahs.length - 1);
+        }
+        lineAyahMap = lineAyahMap.slice(0, totalLines);
+
+        for (let i = 0; i < totalLines; i++) {
+            const ayahIdx = lineAyahMap[i];
+            const ayah = ayahs[ayahIdx];
+            const lineEl = document.createElement('div');
+            lineEl.className = 'ayah-overlay-line';
+            lineEl.dataset.lineIndex = i;
+            lineEl.dataset.ayahIndex = ayahIdx;
+            lineEl.title = `${ayah.surahNameTr} Suresi ${ayah.ayahNumber}. Ayet • Tıkla: Dinle & Meal`;
+
+            lineEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.audioEngine.jumpToAyah(ayahIdx);
+                showAyahPopoverOnLine(e, ayahIdx);
+                updateActiveAyahBanner(ayah);
+            });
+
+            overlay.appendChild(lineEl);
+        }
+
+        // İlk ayet ile aktif banner ve grup seçicileri güncelle
+        if (ayahs[0]) {
+            updateActiveAyahBanner(ayahs[0]);
+            highlightActiveAyah(0);
+        }
         populateGroupSelectors(ayahs);
+
+        if (state.isHafizMaskActive) {
+            renderHafizMasks();
+        }
+    }
+
+    function updateActiveAyahBanner(ayah) {
+        if (!ayah) return;
+        if (activeAyahRef) activeAyahRef.innerHTML = `<i class="fa-solid fa-play gold-icon"></i> ${ayah.surahNumber}:${ayah.ayahNumber}`;
+        if (activeAyahMeal) activeAyahMeal.textContent = ayah.translationTr || 'Diyanet Meali yüklenemedi.';
+    }
+
+    function highlightActiveAyah(index) {
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (overlay) {
+            const lines = overlay.querySelectorAll('.ayah-overlay-line');
+            lines.forEach(line => {
+                const aIdx = parseInt(line.dataset.ayahIndex, 10);
+                line.classList.toggle('active-reading', aIdx === index);
+            });
+        }
+
+        if (state.pageAyahs && state.pageAyahs[index]) {
+            updateActiveAyahBanner(state.pageAyahs[index]);
+        }
+
+        // Ezber maskesi aktifse çalan ayeti otomatik aç
+        if (state.isHafizMaskActive) {
+            revealAyahMask(index);
+        }
+    }
+
+    function populateGroupSelectors(ayahs) {
+        if (!selGroupStart || !selGroupEnd || !ayahs || ayahs.length === 0) return;
+        selGroupStart.innerHTML = '';
+        selGroupEnd.innerHTML = '';
+
+        ayahs.forEach((a, idx) => {
+            const opt1 = document.createElement('option');
+            opt1.value = idx;
+            opt1.textContent = `${idx + 1}. Ayet (${a.surahNameTr} ${a.ayahNumber})`;
+            selGroupStart.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = idx;
+            opt2.textContent = `${idx + 1}. Ayet (${a.surahNameTr} ${a.ayahNumber})`;
+            if (idx === Math.min(2, ayahs.length - 1)) opt2.selected = true;
+            selGroupEnd.appendChild(opt2);
+        });
+    }
+
+    function highlightAyahGroup(startIdx, endIdx) {
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (!overlay) return;
+        const lines = overlay.querySelectorAll('.ayah-overlay-line');
+        lines.forEach(line => {
+            const aIdx = parseInt(line.dataset.ayahIndex, 10);
+            const inGrp = aIdx >= startIdx && aIdx <= endIdx;
+            line.style.outline = inGrp ? '1px dashed var(--gold-bright)' : 'none';
+        });
+    }
+
+    function setupAudioQueue() {
+        if (!state.pageAyahs || state.pageAyahs.length === 0) return;
+        window.audioEngine.setQueue(state.pageAyahs, 0, false);
+    }
+
+    // ==========================================
+    // 4. Popover & Çekmece İşlemleri
+    // ==========================================
+    function showAyahPopoverOnLine(e, index) {
+        selectedAyahIndexForPopover = index;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const stage = document.getElementById('container-mushaf-studio') || document.body;
+        const stageRect = stage.getBoundingClientRect();
+
+        ayahQuickActions.style.left = `${rect.left + rect.width / 2 - stageRect.left}px`;
+        ayahQuickActions.style.top = `${rect.top - stageRect.top - 10}px`;
+        ayahQuickActions.style.display = 'flex';
+    }
+
+    function renderHafizMasks() {
+        const maskLayer = mushafMaskOverlay || document.getElementById('mushaf-mask-overlay');
+        if (!maskLayer) return;
+        maskLayer.innerHTML = '';
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (!overlay) return;
+
+        const lines = overlay.querySelectorAll('.ayah-overlay-line');
+        lines.forEach((line, idx) => {
+            const block = document.createElement('div');
+            block.className = 'mask-overlay-block';
+            block.id = `mask-block-${idx}`;
+            block.dataset.lineIdx = idx;
+            block.innerHTML = `<span>🔒 Ezber Kontrolü (Tıkla ve Aç)</span>`;
+
+            block.style.top = line.offsetTop + 'px';
+            block.style.left = line.offsetLeft + 'px';
+            block.style.width = line.offsetWidth + 'px';
+            block.style.height = line.offsetHeight + 'px';
+
+            block.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                block.classList.add('revealed');
+            });
+
+            maskLayer.appendChild(block);
+        });
+    }
+
+    function revealAyahMask(ayahIndex) {
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (!overlay) return;
+        const lines = overlay.querySelectorAll('.ayah-overlay-line');
+        lines.forEach((line, idx) => {
+            const aIdx = parseInt(line.dataset.ayahIndex, 10);
+            if (aIdx === ayahIndex) {
+                const maskBlock = document.getElementById(`mask-block-${idx}`);
+                if (maskBlock) maskBlock.classList.add('revealed');
+            }
+        });
+    }
+
+    function toggleHafizMask() {
+        state.isHafizMaskActive = !state.isHafizMaskActive;
+        const maskLayer = mushafMaskOverlay || document.getElementById('mushaf-mask-overlay');
+        const btn = btnToggleHafizMask || document.getElementById('btn-toggle-hafiz-mask');
+
+        if (btn) {
+            btn.classList.toggle('active', state.isHafizMaskActive);
+            btn.innerHTML = state.isHafizMaskActive 
+                ? '<i class="fa-solid fa-eye"></i> <span>Perdeyi Kaldır</span>' 
+                : '<i class="fa-solid fa-eye-slash"></i> <span>Ezber Perdesi</span>';
+        }
+
+        if (maskLayer) {
+            maskLayer.style.display = state.isHafizMaskActive ? 'block' : 'none';
+            if (state.isHafizMaskActive) {
+                renderHafizMasks();
+            }
+        }
     }
 
     function populateGroupSelectors(ayahs) {
@@ -878,10 +1023,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const isHam = state.currentPage === state.lesson.hamPage;
             deckTrackSub.textContent = `Sayfa ${state.currentPage} • ${isHam ? 'Ham Ders' : 'Haslama'} • ${repeatStr}`;
 
-            // Mushaf Sayfasında Çalan Ayeti Altın Renginde Vurgula (Hafız Nuru)
-            document.querySelectorAll('.mushaf-ayah').forEach((el, idx) => {
-                el.classList.toggle('playing-ayah', idx === index);
-            });
+            // Diyanet Orijinal Mushafı Üzerinde Canlı Okunan Ayeti Altın Renginde Vurgula (Hafız Nuru)
+            highlightActiveAyah(index);
 
             // Çekmecede ve Dijital Kartlarda Aktifliği Güncelle
             document.querySelectorAll('.drawer-ayah-item').forEach((el, idx) => {
@@ -890,14 +1033,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.ayah-card').forEach((el, idx) => {
                 el.classList.toggle('active', idx === index);
             });
-
-            // Kelime vurgularını temizle
-            document.querySelectorAll('.mushaf-word.active-slice-word').forEach(el => el.classList.remove('active-slice-word'));
-
-            const activeAyahEl = document.getElementById(`mushaf-ayah-${index}`);
-            if (activeAyahEl && state.activeView === 'live') {
-                activeAyahEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
         };
 
         window.audioEngine.onSliceUpdate = (info) => {
@@ -1030,9 +1165,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Görünüm Sekmeleri
-        tabMushafLive.addEventListener('click', () => setView('live'));
-        tabMushafFacsimile.addEventListener('click', () => setView('facsimile'));
-        tabAyahView.addEventListener('click', () => setView('ayah'));
+        if (tabMushafStudio) tabMushafStudio.addEventListener('click', () => setView('studio'));
+        if (tabAyahView) tabAyahView.addEventListener('click', () => setView('ayah'));
+
+        // Ezber Perdesi / Maskeleme Butonu
+        if (btnToggleHafizMask) {
+            btnToggleHafizMask.addEventListener('click', () => toggleHafizMask());
+        }
+
+        // Alt Banner Meal Butonu
+        if (btnBannerMealDrawer) {
+            btnBannerMealDrawer.addEventListener('click', () => {
+                if (translationDrawer) translationDrawer.classList.add('open');
+            });
+        }
 
         // Sayfa Değiştirme
         btnPrevPage.addEventListener('click', () => {
@@ -1623,13 +1769,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setView(view) {
         state.activeView = view;
-        tabMushafLive.classList.toggle('active', view === 'live');
-        tabMushafFacsimile.classList.toggle('active', view === 'facsimile');
-        tabAyahView.classList.toggle('active', view === 'ayah');
+        if (tabMushafStudio) tabMushafStudio.classList.toggle('active', view === 'studio');
+        if (tabAyahView) tabAyahView.classList.toggle('active', view === 'ayah');
 
-        containerMushafLive.style.display = view === 'live' ? 'flex' : 'none';
-        containerMushafFacsimile.style.display = view === 'facsimile' ? 'flex' : 'none';
-        containerAyahView.style.display = view === 'ayah' ? 'flex' : 'none';
+        if (containerMushafStudio) containerMushafStudio.style.display = view === 'studio' ? 'flex' : 'none';
+        if (containerAyahView) containerAyahView.style.display = view === 'ayah' ? 'flex' : 'none';
     }
 
     // ==========================================

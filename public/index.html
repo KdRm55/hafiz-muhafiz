@@ -429,13 +429,10 @@
         <main class="main-content">
             <!-- Mushaf Araç ve Görünüm Çubuğu (Toolbar) -->
             <div class="view-toolbar">
-                <!-- Sol: 3 Net Görünüm Sekmesi -->
+                <!-- Sol: 2 Net Görünüm Sekmesi -->
                 <div class="view-tabs">
-                    <button id="tab-mushaf-live" class="view-tab active" title="Diyanet 15 Satır Âyet-Berkenar Canlı İnteraktif Ekran">
-                        <i class="fa-solid fa-book-quran"></i> <span>Diyanet 15 Satır (İnteraktif)</span>
-                    </button>
-                    <button id="tab-mushaf-facsimile" class="view-tab" title="Diyanet İşleri Başkanlığı Resmi 604 Sayfa Orijinal Matbaa Baskısı">
-                        <i class="fa-solid fa-file-pdf"></i> <span>Diyanet Resmi Baskısı (Orijinal)</span>
+                    <button id="tab-mushaf-studio" class="view-tab active" title="Diyanet İşleri Başkanlığı 15 Satır Orijinal Matbaa Baskısı ve Canlı İnteraktif Tilavet">
+                        <i class="fa-solid fa-book-quran"></i> <span>Diyanet Mushafı (Orijinal & İnteraktif)</span>
                     </button>
                     <button id="tab-ayah-view" class="view-tab" title="Geniş Hatlı Ayet & Diyanet Meali Kartları">
                         <i class="fa-solid fa-list-check"></i> <span>Ayet & Meal Kartları</span>
@@ -447,96 +444,88 @@
 
                 <!-- Sağ: Hızlı Tipografi & Görsel Ayarlar -->
                 <div class="mushaf-tools">
-                    <!-- Kağıt Teması Seçici (🌙 Gece, 📜 Sepya, ☀️ Fildişi) -->
-                    <div class="tool-group" title="Mushaf Kağıt Tonu">
-                        <button class="btn-paper-theme active" data-theme="night" title="Koyu Gece Zümrütü"><i class="fa-solid fa-moon"></i></button>
-                        <button class="btn-paper-theme" data-theme="sepia" title="Klasik Parşömen (Sıcak Sepya)"><i class="fa-solid fa-scroll"></i></button>
-                        <button class="btn-paper-theme" data-theme="cream" title="Fildişi Mushaf Kağıdı"><i class="fa-solid fa-sun"></i></button>
-                    </div>
-
-                    <!-- Zoom Kontrolü -->
-                    <div class="tool-group" title="Metin Boyutu">
-                        <button id="btn-zoom-out" class="tool-btn" title="Yazıyı Küçült"><i class="fa-solid fa-minus"></i></button>
-                        <span id="label-zoom" class="tool-label">100%</span>
-                        <button id="btn-zoom-in" class="tool-btn" title="Yazıyı Büyüt"><i class="fa-solid fa-plus"></i></button>
-                    </div>
+                    <!-- Ezber / Perdeleme Modu Butonu (Maskeleme) -->
+                    <button id="btn-toggle-hafiz-mask" class="btn-header gold-btn btn-sm" title="Hafızlık Ezber Perdesi: Okunmamış ayetleri kapat / aç">
+                        <i class="fa-solid fa-eye-slash"></i> <span>Ezber Perdesi</span>
+                    </button>
 
                     <!-- Ayet Meali Çekmecesi Butonu -->
                     <button id="btn-toggle-translation-drawer" class="btn-header" title="Ayetlerin Türkçe Mealini Göster">
                         <i class="fa-solid fa-language"></i> <span class="hide-mobile">Diyanet Meali</span>
                     </button>
 
-                    <!-- Mushaf Hattı Seçici -->
-                    <div class="setting-pill hat-selector-pill" title="Mushaf Hattı Seçimi">
-                        <label><i class="fa-solid fa-pen-nib"></i></label>
-                        <select id="select-mushaf-font" class="pill-select">
-                            <option value="hafiz-osman" selected>Diyanet / Hâfız Osman (15 Satır)</option>
-                            <option value="diyanet-digital">Diyanet Dijital Hattı</option>
-                            <option value="hasan-riza">Hasan Rıza (Osmanlı Neshi)</option>
-                            <option value="ahmed-husrev">Ahmed Hüsrev (Hayrât Tevâfuklu)</option>
-                            <option value="osman-taha">Osman Taha (Medine)</option>
-                        </select>
-                    </div>
-
-                    <!-- İmlâ Seçici -->
-                    <div class="setting-pill imla-selector-pill" title="Kur'an Metni İmlâ Türü">
-                        <label><i class="fa-solid fa-spell-check"></i></label>
-                        <select id="select-mushaf-imla" class="pill-select">
-                            <option value="diyanet" selected>Diyanet / Türk İmlâsı</option>
-                            <option value="uthmani">Resm-i Medine (Uthmani)</option>
+                    <!-- Baskı / Hat Seçimi -->
+                    <div class="setting-pill hat-selector-pill" title="Mushaf Baskı Ekolü">
+                        <label><i class="fa-solid fa-book-open"></i></label>
+                        <select id="select-facsimile-edition" class="pill-select">
+                            <option value="diyanet-pdf" selected>🇹🇷 Diyanet Resmi 15 Satır (Orijinal)</option>
+                            <option value="madani">🇸🇦 Medine-i Münevvere (Hattat Osman Taha)</option>
+                            <option value="tajweed">🌈 Renkli Tecvidli Medine Baskısı</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <!-- ================= GÖRÜNÜM 1: İnteraktif Mushaf Sayfası (15 Satır) ================= -->
-            <div id="container-mushaf-live" class="mushaf-stage">
+            <!-- ================= BİRLEŞTİRİLMİŞ ASIL SAHNE: Diyanet İnteraktif Orijinal Mushafı ================= -->
+            <div id="container-mushaf-studio" class="mushaf-stage">
                 <!-- Yan Hızlı Sayfa Geçiş Butonları -->
-                <button class="stage-nav-arrow stage-nav-prev" id="btn-stage-prev" title="Önceki Sayfa">
+                <button class="stage-nav-arrow stage-nav-prev" id="btn-stage-prev" title="Önceki Sayfa (Sol Ok / A Tuşu)">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <button class="stage-nav-arrow stage-nav-next" id="btn-stage-next" title="Sonraki Sayfa">
+                <button class="stage-nav-arrow stage-nav-next" id="btn-stage-next" title="Sonraki Sayfa (Sağ Ok / D Tuşu)">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
 
                 <div class="mushaf-book-wrapper" id="mushaf-scale-wrapper">
-                    <!-- Otantik Osmanlı/Diyanet Tezhip Çerçevesi -->
-                    <div class="mushaf-parchment-sheet">
-                        <!-- Üst Başlık Şeridi (Cüz, Sure Adı, Sayfa) -->
-                        <div class="sheet-header">
-                            <div class="sheet-corner-juz">
-                                <i class="fa-solid fa-diamond gold-icon"></i> <span id="mushaf-juz-title">24. Cüz</span>
+                    <div class="mushaf-frame-modern">
+                        <!-- Sayfa Üst Bilgi Başlığı -->
+                        <div class="mushaf-page-top-bar">
+                            <div class="top-bar-left">
+                                <span class="top-badge gold-badge" id="mushaf-juz-title"><i class="fa-solid fa-diamond"></i> 24. Cüz</span>
+                                <span class="top-badge dim-badge" id="mushaf-hizb-title">47. Hizb</span>
                             </div>
-                            <div class="sheet-center-surah">
-                                <span id="mushaf-surah-title">Fussilet Suresi</span>
-                                <div class="hat-name-sub"><i class="fa-solid fa-pen-nib"></i> Diyanet İşleri Başkanlığı • 15 Satır Âyet-Berkenar Standart Mushafı</div>
+                            <div class="top-bar-center">
+                                <span class="surah-title-arabic" id="mushaf-surah-title">سُورَةُ الْمُؤْمِنِ (Gâfir)</span>
+                                <span class="edition-sub-tag"><i class="fa-solid fa-certificate"></i> Diyanet İşleri Başkanlığı Resmi 15 Satır Matbaa Baskısı</span>
                             </div>
-                            <div class="sheet-corner-page">
-                                <span id="mushaf-page-number">474</span> <i class="fa-solid fa-diamond gold-icon"></i>
+                            <div class="top-bar-right">
+                                <span class="page-number-box" id="mushaf-page-number">Sayfa 474</span>
                             </div>
                         </div>
 
-                        <!-- Kenar Cüz / Hizb Gülü Süslemesi -->
-                        <div class="sheet-side-ornament left">
-                            <div class="hizb-rosette" id="sheet-rosette">
-                                <span>CÜZ</span>
-                                <strong id="rosette-juz-num">24</strong>
+                        <!-- Asıl Mushaf Sahnesi & İnteraktif Katmanlar -->
+                        <div class="mushaf-viewport-container" id="mushaf-viewport-container">
+                            <!-- Yükleme Göstergesi -->
+                            <div id="facsimile-loading-spinner" class="facsimile-loader">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                <span id="facsimile-loader-text">Diyanet resmi Mushaf sayfası hazırlanıyor...</span>
                             </div>
-                        </div>
-                        <div class="sheet-side-ornament right">
-                            <div class="page-side-tag" id="sheet-lesson-tag">HAM DERS</div>
+
+                            <!-- 1. Katman: Diyanet Resmi Vektörel PDF Canvas'ı -->
+                            <canvas id="mushaf-diyanet-canvas" class="mushaf-canvas-layer"></canvas>
+
+                            <!-- 2. Katman (İsteğe bağlı): Medine & Tecvidli İmaj Öğesi -->
+                            <img id="mushaf-image" class="mushaf-img-fallback" src="" alt="Mushaf Baskısı" style="display:none;">
+
+                            <!-- 3. Katman: İnteraktif Ayet Vurgu, Tıklama ve Durak Katmanı -->
+                            <div id="mushaf-interactive-overlay" class="mushaf-interactive-layer"></div>
+
+                            <!-- 4. Katman: Hafızlık Ezber / Perdeleme Maskesi (Örtü) -->
+                            <div id="mushaf-mask-overlay" class="mushaf-mask-layer" style="display:none;"></div>
                         </div>
 
-                        <!-- 15 Satır Kur'an-ı Kerim Metin Alanı (Tıklanabilir & Vurgulu Ayetler) -->
-                        <div class="sheet-content" id="mushaf-text-flow" dir="rtl">
-                            <!-- JavaScript ile dinamik olarak doldurulur -->
-                        </div>
-
-                        <!-- Alt Bilgi ve Ders İpucu -->
-                        <div class="sheet-footer">
-                            <div class="sheet-lesson-tip">
-                                <i class="fa-solid fa-circle-info"></i> Diyanet Standart Mushafı: Ayete tıklayarak dinlemeyi başlatabilir, 5x tekrar veya mealini açabilirsiniz.
+                        <!-- Aktif Okunan Ayet & Diyanet Meali Şeridi (Canlı Alt Bilgi) -->
+                        <div class="active-ayah-banner" id="active-ayah-banner">
+                            <div class="active-ayah-badge">
+                                <span id="active-ayah-ref" class="ayah-ref-pill"><i class="fa-solid fa-play gold-icon"></i> 40:59</span>
+                                <span id="active-ayah-tag" class="ayah-mode-pill">Canlı Tilavet</span>
                             </div>
+                            <div class="active-ayah-meal-text" id="active-ayah-meal">
+                                Şüphesiz o kıyamet saati kesinlikle gelecektir; onda hiçbir şüphe yoktur. Fakat insanların çoğu inanmazlar.
+                            </div>
+                            <button id="btn-banner-meal-drawer" class="btn-banner-action" title="Tüm Sayfanın Mealini Aç">
+                                <i class="fa-solid fa-book-open"></i> <span>Tüm Mealler</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -549,36 +538,6 @@
                     <button class="pop-btn" id="pop-btn-group-end" title="Grup Sonu Yap"><i class="fa-solid fa-flag-checkered"></i> Grup Sonu</button>
                     <button class="pop-btn" id="pop-btn-slice" title="Ayet Bölücü ile ezberle"><i class="fa-solid fa-scissors"></i> Parçala</button>
                     <button class="pop-btn" id="pop-btn-meal"><i class="fa-solid fa-book-open"></i> Meal</button>
-                </div>
-            </div>
-
-            <!-- ================= GÖRÜNÜM 2: Diyanet & Medine Orijinal Mushaf Baskısı ================= -->
-            <div id="container-mushaf-facsimile" class="mushaf-container" style="display:none;">
-                <div class="mushaf-frame">
-                    <div class="mushaf-header-info">
-                        <span id="facsimile-juz-info">24. Cüz</span>
-                        <div class="facsimile-edition-picker">
-                            <label for="select-facsimile-edition"><i class="fa-solid fa-book-open"></i> Baskı Ekolü:</label>
-                            <select id="select-facsimile-edition" class="pill-select-sm">
-                                <option value="diyanet-pdf" selected>🇹🇷 Diyanet İşleri Başkanlığı (Resmi Orijinal Baskı)</option>
-                                <option value="madani">🇸🇦 Medine-i Münevvere (Hattat Osman Taha)</option>
-                                <option value="tajweed">🌈 Renkli Tecvidli Medine Baskısı</option>
-                                <option value="warsh">📜 Varş Rivayeti Medine Baskısı</option>
-                            </select>
-                        </div>
-                        <span id="facsimile-surah-info">Fussilet Suresi</span>
-                        <span id="facsimile-page-label">Sayfa 474</span>
-                    </div>
-                    <div class="mushaf-img-wrapper" id="mushaf-img-wrapper">
-                        <div id="facsimile-loading-spinner" class="facsimile-loader">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                            <span id="facsimile-loader-text">Diyanet resmi Mushaf sayfası yükleniyor...</span>
-                        </div>
-                        <!-- 1. Diyanet Resmi Vektörel PDF Canvas Render -->
-                        <canvas id="mushaf-diyanet-canvas" class="mushaf-page-canvas" style="display:block; max-width:100%; height:auto; border-radius:4px; box-shadow:0 8px 30px rgba(0,0,0,0.6); margin:0 auto;"></canvas>
-                        <!-- 2. Medine ve Tecvidli İmaj Öğesi -->
-                        <img id="mushaf-image" class="mushaf-page-img" src="" alt="Mushaf Baskısı" loading="eager" style="display:none;">
-                    </div>
                 </div>
             </div>
 
