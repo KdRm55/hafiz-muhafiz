@@ -548,13 +548,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // Mushaf 1. sayfa = PDF 2. sayfa (Fâtiha)
-                // Mushaf 474. sayfa = PDF 475. sayfa
-                const pdfPageNum = Math.min(Math.max(pageNumber + 1, 1), doc.numPages);
+                // Mushaf 1 = PDF 2 (Fâtiha)
+                // Mushaf 2 = PDF 3 (Bakara başı)
+                // Mushaf p (p >= 3) = PDF p + 2 (Sayfa 474 = PDF 476, Sayfa 604 = PDF 606)
+                let pdfPageNum = 2;
+                if (pageNumber === 1) {
+                    pdfPageNum = 2;
+                } else if (pageNumber === 2) {
+                    pdfPageNum = 3;
+                } else {
+                    pdfPageNum = pageNumber + 2;
+                }
+                pdfPageNum = Math.min(Math.max(pdfPageNum, 1), doc.numPages);
                 const page = await doc.getPage(pdfPageNum);
 
                 const scale = window.devicePixelRatio && window.devicePixelRatio > 1.5 ? 2.0 : 1.7;
-                const viewport = page.getViewport({ scale });
+                // Diyanet PDF sayfaları yatay tarandığından dik (portrait) dikey konuma 90 derece döndürülür
+                const viewport = page.getViewport({ scale, rotation: 90 });
 
                 if (canvas) {
                     canvas.width = viewport.width;
