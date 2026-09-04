@@ -224,6 +224,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const popBtnMeal = document.getElementById('pop-btn-meal');
     let selectedAyahIndexForPopover = 0;
 
+    // Dashboard & Workspace Görünüm Elemanları
+    const viewDashboard = document.getElementById('view-dashboard');
+    const viewWorkspace = document.getElementById('view-workspace');
+    const btnBrandHome = document.getElementById('btn-brand-home');
+    const btnBackToDashboard = document.getElementById('btn-back-to-dashboard');
+    const dashCurrLessonText = document.getElementById('dash-curr-lesson-text');
+    const dashHamPageBadge = document.getElementById('dash-ham-page-badge');
+    const dashMatrixBadge = document.getElementById('dash-matrix-badge');
+
+    const btnTaskHam = document.getElementById('btn-task-ham');
+    const btnTaskHas = document.getElementById('btn-task-has');
+    const btnTaskStrat = document.getElementById('btn-task-strat');
+    const btnTaskFree = document.getElementById('btn-task-free');
+    const btnTaskMatrix = document.getElementById('btn-task-matrix');
+    const btnTaskOffline = document.getElementById('btn-task-offline');
+
+    function showDashboard() {
+        if (viewDashboard) viewDashboard.style.display = 'block';
+        if (viewWorkspace) viewWorkspace.style.display = 'none';
+        updateDashboardInfo();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showWorkspace(mode = 'ham', openStrategy = false) {
+        if (viewDashboard) viewDashboard.style.display = 'none';
+        if (viewWorkspace) viewWorkspace.style.display = 'block';
+
+        if (mode === 'has' || mode === 'chain-has') {
+            setMode('chain-has');
+        } else if (mode === 'free') {
+            setMode('ham');
+        } else {
+            setMode('ham');
+        }
+
+        if (openStrategy) {
+            if (panelEzberStrategy) {
+                panelEzberStrategy.style.display = 'block';
+                activateStrategyTab('group');
+            }
+        } else {
+            if (panelEzberStrategy) panelEzberStrategy.style.display = 'none';
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateDashboardInfo() {
+        if (state.lesson) {
+            if (dashCurrLessonText) {
+                dashCurrLessonText.textContent = `${state.currentRotation}. Dönüş • ${state.currentJuz}. Cüz (${state.lesson.juzName}) | Sayfa ${state.lesson.hamPage}`;
+            }
+            if (dashHamPageBadge) {
+                dashHamPageBadge.textContent = `Cüzün ${state.lesson.pageInJuz}. Sayfası (s. ${state.lesson.hamPage})`;
+            }
+        }
+        if (window.hafizEngine) {
+            const stats = window.hafizEngine.getMatrixStats();
+            if (dashMatrixBadge) {
+                dashMatrixBadge.textContent = `${stats.completedCells} / 600 Tamamlandı (%${stats.overallPercentage})`;
+            }
+        }
+    }
+
     // ==========================================
     // 1. Başlangıç (Init)
     // ==========================================
@@ -240,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         loadLesson(state.currentJuz, state.currentRotation);
         updateHeaderStats();
+        showDashboard();
     }
 
     function registerServiceWorker() {
@@ -811,9 +876,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7. Olay Dinleyicileri (Event Listeners)
     // ==========================================
     function bindEvents() {
+        // Dashboard Görev Butonları
+        if (btnTaskHam) btnTaskHam.addEventListener('click', () => showWorkspace('ham', false));
+        if (btnTaskHas) btnTaskHas.addEventListener('click', () => showWorkspace('chain-has', false));
+        if (btnTaskStrat) btnTaskStrat.addEventListener('click', () => showWorkspace('ham', true));
+        if (btnTaskFree) btnTaskFree.addEventListener('click', () => showWorkspace('free', false));
+        if (btnTaskMatrix) btnTaskMatrix.addEventListener('click', () => {
+            if (modalMatrix) modalMatrix.classList.add('open');
+        });
+        if (btnTaskOffline) btnTaskOffline.addEventListener('click', () => {
+            if (modalOffline) modalOffline.classList.add('open');
+        });
+
+        if (btnBackToDashboard) btnBackToDashboard.addEventListener('click', () => showDashboard());
+        if (btnBrandHome) btnBrandHome.addEventListener('click', () => showDashboard());
+
         // Cüz & Dönüş Değişimi
-        selectJuz.addEventListener('change', (e) => loadLesson(e.target.value, state.currentRotation));
-        selectRotation.addEventListener('change', (e) => loadLesson(state.currentJuz, e.target.value));
+        selectJuz.addEventListener('change', (e) => {
+            loadLesson(e.target.value, state.currentRotation);
+            updateDashboardInfo();
+        });
+        selectRotation.addEventListener('change', (e) => {
+            loadLesson(state.currentJuz, e.target.value);
+            updateDashboardInfo();
+        });
 
         // Mod Seçimi (Sadece Ham Ezber ve Dönüş Haslama)
         if (modeHam) modeHam.addEventListener('click', () => setMode('ham'));

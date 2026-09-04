@@ -28,9 +28,9 @@
 </head>
 <body class="theme-night">
 
-    <!-- ================= 1. Modern, Sade & Odaklı Üst Şerit (App Header) ================= -->
+    <!-- ================= 1. Modern Üst Bar (App Header) ================= -->
     <header class="app-header">
-        <div class="brand-section">
+        <div class="brand-section" id="btn-brand-home" style="cursor:pointer;" title="Ana Menüye Dön">
             <div class="brand-logo">
                 <i class="fa-solid fa-quran"></i>
             </div>
@@ -39,11 +39,11 @@
                     <h1>Hafız Muhafız</h1>
                     <span class="badge-turk">Türk Usulü</span>
                 </div>
-                <p class="brand-sub">Osmanlı Dönüş (Şavt) & Akıllı Tekrar Stüdyosu</p>
+                <p class="brand-sub">Osmanlı Dönüş (Şavt) & Hafızlık Asistanı</p>
             </div>
         </div>
 
-        <!-- Merkez: Akıllı Sayfa / Sure / Cüz Hızlı Arama -->
+        <!-- Hızlı Sayfa / Sure Arama -->
         <div class="quick-jump-container">
             <div class="quick-jump-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -52,62 +52,200 @@
             </div>
         </div>
 
-        <!-- Sağ: Ana Menü & Modül Butonları (Kategorize Edilmiş 4 Ana Merkez) -->
+        <!-- Üst Hızlı Menü Butonları -->
         <div class="header-actions">
-            <!-- Canlı Ağ Durumu -->
+            <!-- Canlı Bağlantı Durumu -->
             <div id="badge-network-status" class="network-badge online" title="Bağlantı Durumu">
                 <i class="fa-solid fa-wifi"></i> <span class="badge-text hide-mobile">Çevrim İçi</span>
             </div>
 
-            <!-- 1. Hafızlık İlerlemem & Karne (Matris + Günlük Dinleme Süresi) -->
+            <!-- Hafızlık İlerlemem & Matris Butonu -->
             <button id="btn-open-matrix" class="btn-header gold-btn" title="600 Hücrelik Hafızlık İlerleme Matrisi">
-                <i class="fa-solid fa-chart-line"></i> <span class="btn-text">Hafızlık Matrisi</span>
+                <i class="fa-solid fa-network-wired"></i> <span class="btn-text hide-mobile">Hafızlık Matrisi</span>
                 <span id="badge-header-progress" class="mini-progress-pill">0%</span>
             </button>
 
-            <!-- Günlük Çalışma Karnesi Butonu -->
+            <!-- Günlük Süre / Karne Butonu -->
             <button id="btn-open-stats" class="btn-header" title="Günlük Çalışma Karnesi">
                 <i class="fa-solid fa-clock-rotate-left"></i> <span id="header-listening-time">0 dk</span>
             </button>
 
-            <!-- 2. Görünüm & Hat Ekolleri -->
+            <!-- Görünüm & Hatlar -->
             <button id="btn-hat-modal" class="btn-header" title="Kur'an Hatları, Kağıt Temaları & İmlâ">
-                <i class="fa-solid fa-palette"></i> <span class="hide-mobile">Görünüm & Hatlar</span>
+                <i class="fa-solid fa-palette"></i> <span class="hide-mobile">Hat & Tema</span>
             </button>
 
-            <!-- 3. Çevrim Dışı Yönetici & İndirici -->
+            <!-- Çevrim Dışı İndirici -->
             <button id="btn-open-offline" class="btn-header" title="Çevrim Dışı Depolama & Cüz İndirme">
                 <i class="fa-solid fa-cloud-arrow-down"></i> <span class="hide-mobile">Çevrim Dışı</span>
             </button>
 
-            <!-- 4. Cihaza Yükle (PWA) -->
-            <button id="btn-open-install" class="btn-header" title="PC, iOS, Android ve Huawei Cihazlara Yükle">
-                <i class="fa-solid fa-mobile-screen-button"></i> <span class="hide-mobile">Yükle</span>
+            <!-- Cihaza Yükle -->
+            <button id="btn-open-install" class="btn-header icon-only" title="PC, iOS, Android ve Huawei Cihazlara Yükle">
+                <i class="fa-solid fa-mobile-screen-button"></i>
             </button>
 
-            <!-- 5. Klavye Kısayolları -->
+            <!-- Klavye Kısayolları -->
             <button id="btn-open-shortcuts" class="btn-header icon-only" title="Klavye Kısayolları">
                 <i class="fa-solid fa-keyboard"></i>
             </button>
         </div>
     </header>
 
-    <!-- ================= 2. Hafızlık Stüdyo Çubuğu (Ders & Ezber Yönetimi) ================= -->
-    <section class="studio-bar">
-        <div class="studio-bar-inner">
-            <!-- Sol: Cüz & Dönüş Seçici + Ders Durumu -->
-            <div class="studio-selectors">
-                <div class="studio-select-box">
-                    <label for="select-juz"><i class="fa-solid fa-book-open"></i> Aktif Cüz</label>
-                    <select id="select-juz" class="studio-select"></select>
-                </div>
+    <!-- ================= KADEME 1: ÖĞRENCİ KARŞILAMA & GÖREV PANELİ (DASHBOARD) ================= -->
+    <section id="view-dashboard" class="dashboard-container">
+        <!-- 1. Kişisel Hafızlık Durum Kartı (Hero Banner) -->
+        <div class="dash-hero-card">
+            <div class="dash-hero-content">
+                <div class="dash-hero-badge"><i class="fa-solid fa-moon gold-icon"></i> Osmanlı Usulü Hafızlık Stüdyosu</div>
+                <h2 class="dash-hero-title">Selamün Aleyküm Hafız, <span class="gold-text">Bugün Ne Çalışmak İstiyorsun?</span></h2>
+                <p class="dash-hero-sub">
+                    Şu anki programınız: <strong id="dash-curr-lesson-text" style="color:var(--gold-bright);">8. Dönüş • 24. Cüz (Sayfa 474)</strong>
+                </p>
+            </div>
 
-                <div class="studio-select-box">
-                    <label for="select-rotation"><i class="fa-solid fa-arrows-spin"></i> Dönüş (Aşama)</label>
-                    <select id="select-rotation" class="studio-select"></select>
+            <!-- Hızlı Cüz & Dönüş Ayarlayıcı -->
+            <div class="dash-hero-controls">
+                <div class="dash-select-group">
+                    <div class="dash-select-item">
+                        <label for="select-juz"><i class="fa-solid fa-book-open"></i> Aktif Cüz</label>
+                        <select id="select-juz" class="studio-select"></select>
+                    </div>
+                    <div class="dash-select-item">
+                        <label for="select-rotation"><i class="fa-solid fa-arrows-spin"></i> Dönüş (Aşama)</label>
+                        <select id="select-rotation" class="studio-select"></select>
+                    </div>
                 </div>
+                <button id="btn-toggle-completed" class="btn-complete-lesson" title="Bu dersin tamamlandığını matrise kaydet">
+                    <i class="fa-regular fa-circle-check"></i> <span id="text-completed-status">Tamamla</span>
+                </button>
+            </div>
+        </div>
 
-                <!-- Aktif Ders Rozeti ve Tamamlama Butonu -->
+        <!-- 2. Görev Seçim Kartları (6 Ana Modül Butonu) -->
+        <div class="dash-tasks-grid">
+            <!-- Görev 1: Günün Ham Dersi -->
+            <div class="dash-task-card primary-task" id="btn-task-ham">
+                <div class="task-card-icon gold-bg">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <div class="task-card-body">
+                    <div class="task-tag">ÖNCELİKLİ GÖREV</div>
+                    <h3 class="task-title">🌟 1. Günün Ham Dersi</h3>
+                    <p class="task-desc">Günün yeni ezber sayfasına odaklanın. Tane tane dinleyin, nefes paylarında tekrar edin.</p>
+                    <div class="task-meta">
+                        <span id="dash-ham-page-badge" class="task-pill gold-pill">Cüzün 13. Sayfası (s. 474)</span>
+                    </div>
+                </div>
+                <div class="task-action-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Görev 2: Dönüş Haslaması -->
+            <div class="dash-task-card" id="btn-task-has">
+                <div class="task-card-icon emerald-bg">
+                    <i class="fa-solid fa-link"></i>
+                </div>
+                <div class="task-card-body">
+                    <div class="task-tag">PEKİŞTİRME & HASLAMA</div>
+                    <h3 class="task-title">🔗 2. Dönüş Haslaması</h3>
+                    <p class="task-desc">Cüzün daha önceki dönüş sayfalarını veya 30 cüzü zincirleme arka arkaya haslayın.</p>
+                    <div class="task-meta">
+                        <span class="task-pill">Cüz İçi & 30 Cüz Zinciri</span>
+                    </div>
+                </div>
+                <div class="task-action-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Görev 3: Parçalayarak Ezberle -->
+            <div class="dash-task-card highlight-task" id="btn-task-strat">
+                <div class="task-card-icon ruby-bg">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
+                <div class="task-card-body">
+                    <div class="task-tag">ÖZEL STRATEJİLER</div>
+                    <h3 class="task-title">✂️ 3. Parçalayarak Ezberle</h3>
+                    <p class="task-desc">Kelime kelime ayet içi parçalama, 2-3-5'li ayet bloklama veya tersten yukarıya ezberleme.</p>
+                    <div class="task-meta">
+                        <span class="task-pill ruby-pill">Kelime Bölücü & Tersten</span>
+                    </div>
+                </div>
+                <div class="task-action-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Görev 4: Serbest Mushaf & Tilavet -->
+            <div class="dash-task-card" id="btn-task-free">
+                <div class="task-card-icon blue-bg">
+                    <i class="fa-solid fa-book-quran"></i>
+                </div>
+                <div class="task-card-body">
+                    <div class="task-tag">MUSHAF & TİLAVET</div>
+                    <h3 class="task-title">📖 4. Serbest Mushaf & Dinleme</h3>
+                    <p class="task-desc">1-604 sayfa arasında serbestçe gezinin, 16 kâriden dilediğinizi dinleyin ve mealleri okuyun.</p>
+                    <div class="task-meta">
+                        <span class="task-pill">604 Sayfa • 114 Sure</span>
+                    </div>
+                </div>
+                <div class="task-action-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Görev 5: Hafızlık Ağacı & Matris -->
+            <div class="dash-task-card" id="btn-task-matrix">
+                <div class="task-card-icon purple-bg">
+                    <i class="fa-solid fa-network-wired"></i>
+                </div>
+                <div class="task-card-body">
+                    <div class="task-tag">İLERLEME & KARNE</div>
+                    <h3 class="task-title">📊 5. 600 Hücrelik Matris</h3>
+                    <p class="task-desc">30 cüz x 20 dönüş Osmanlı hafızlık ağacınızı inceleyin, tamamlanan dersleri görün.</p>
+                    <div class="task-meta">
+                        <span class="task-pill" id="dash-matrix-badge">0 / 600 Tamamlandı (%0)</span>
+                    </div>
+                </div>
+                <div class="task-action-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+
+            <!-- Görev 6: Çevrim Dışı Depolama -->
+            <div class="dash-task-card" id="btn-task-offline">
+                <div class="task-card-icon teal-bg">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+                <div class="task-card-body">
+                    <div class="task-tag">OFFLINE DESTEK</div>
+                    <h3 class="task-title">📥 6. Çevrim Dışı Depolama</h3>
+                    <p class="task-desc">İnternetiniz yokken dahi çalışmak için cüzleri ve sesleri cihazınızın hafızasına indirin.</p>
+                    <div class="task-meta">
+                        <span class="task-pill">IndexedDB Yerel Depo</span>
+                    </div>
+                </div>
+                <div class="task-action-arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= KADEME 2: ODAKLI ÇALIŞMA STÜDYOSU (WORKSPACE) ================= -->
+    <div id="view-workspace" class="workspace-container" style="display:none;">
+
+        <!-- 1. Stüdyo Başlık Çubuğu & "Ana Menüye Dön" Butonu -->
+        <section class="studio-bar">
+            <div class="studio-bar-inner">
+                <!-- Sol: Ana Menüye Dön Butonu -->
+                <button id="btn-back-to-dashboard" class="btn-header gold-btn" title="Karşılama Paneline Dön">
+                    <i class="fa-solid fa-house"></i> <span>Ana Menü</span>
+                </button>
+
+                <!-- Orta: Aktif Mod ve Ders Bilgisi -->
                 <div class="studio-lesson-card">
                     <div id="card-standard-lesson" class="lesson-info-row">
                         <div class="lesson-badge-wrap">
@@ -116,9 +254,6 @@
                         </div>
                         <span class="lesson-dot">•</span>
                         <span id="chip-lesson-scope" class="lesson-scope-text">8. Dönüş • 24. Cüz</span>
-                        <button id="btn-toggle-completed" class="btn-complete-lesson" title="Bu dersin tamamlandığını matrise kaydet">
-                            <i class="fa-regular fa-circle-check"></i> <span id="text-completed-status">Tamamla</span>
-                        </button>
                     </div>
 
                     <!-- Zincir Haslama Özel Seçicisi (Haslama modunda açılır) -->
@@ -132,429 +267,429 @@
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Orta: 3 Temel Ezber Çalışma Modu (Kategorik Buton Grubu) -->
-            <div class="studio-modes">
-                <div class="mode-toggle-group">
-                    <button id="mode-ham" class="mode-toggle-btn active" title="Günün yeni ezberlenen ham sayfasına yoğunlaşır">
-                        <i class="fa-solid fa-star"></i> 🌟 Ham Ezber
-                    </button>
-                    <button id="mode-chain-has" class="mode-toggle-btn" title="Seçilen dönüşün 30 cüzdeki tüm sayfalarını zincirleme haslar">
-                        <i class="fa-solid fa-link"></i> 🔗 30 Cüz Haslama
-                    </button>
-                    <button id="btn-toggle-strategy-panel" class="mode-toggle-btn gold-strategy-btn" title="Ayet Bölme, Parçalama ve Tersten Ezber Menüsünü Aç">
-                        <i class="fa-solid fa-scissors"></i> ✂️ Parçalayarak Ezberle
-                    </button>
-                </div>
-            </div>
-
-            <!-- Sağ: Hızlı Sayfa Navigasyonu (◀ Sayfa 474 ▶) -->
-            <div class="page-navigator studio-nav-box">
-                <button id="btn-prev-page" class="nav-page-btn" title="Önceki Sayfa (Sol Ok / A Tuşu)">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div id="badge-page-num" class="current-page-badge" title="Tıklayıp doğrudan sayfa yazabilirsiniz">Sayfa 474</div>
-                <button id="btn-next-page" class="nav-page-btn" title="Sonraki Sayfa (Sağ Ok / D Tuşu)">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- ================= Gelişmiş "Parçalayarak Ezberleme" Alt Paneli (Collapsible Accordion Hub) ================= -->
-        <div id="panel-ezber-strategy" class="ezber-strategy-container" style="display:none;">
-            <div class="strategy-inner">
-                <div class="strategy-header-title">
-                    <i class="fa-solid fa-wand-magic-sparkles gold-icon"></i> <strong>Parçalayarak Ezberleme Stratejileri</strong>
-                    <span class="strategy-sub">Ayetleri bloklara ayırın, kelime kelime parçalayın veya tersten pekiştirin.</span>
-                </div>
-
-                <!-- 4 Strateji Alt Başlığı (Sekmeler) -->
-                <div class="strategy-tabs">
-                    <button id="btn-strat-standard" class="strat-tab-btn active" data-strategy="standard">
-                        <i class="fa-solid fa-arrow-down-1-9"></i> ⬇️ 1. Sıralı Standart
-                    </button>
-                    <button id="btn-strat-group" class="strat-tab-btn" data-strategy="group">
-                        <i class="fa-solid fa-layer-group"></i> 📑 2. Ayet Bloklama (Gruplu)
-                    </button>
-                    <button id="btn-strat-slice" class="strat-tab-btn" data-strategy="slice">
-                        <i class="fa-solid fa-scissors"></i> ✂️ 3. Ayet İçi Parçalama (Kelime)
-                    </button>
-                    <button id="btn-strat-reverse" class="strat-tab-btn" data-strategy="reverse">
-                        <i class="fa-solid fa-arrow-up-9-1"></i> ⬆️ 4. Tersten (Aşağıdan Yukarı)
-                    </button>
-                </div>
-
-                <!-- 1. Alt Başlık: Gruplu Ayet Bloklama Kontrolleri -->
-                <div id="strat-controls-group" class="strat-sub-controls" style="display:none;">
-                    <div class="strat-row">
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-bolt"></i> Hızlı Grup:</span>
-                            <button class="btn-quick-group" data-span="2">2'şerli</button>
-                            <button class="btn-quick-group active" data-span="3">3'erli</button>
-                            <button class="btn-quick-group" data-span="5">5'erli</button>
-                        </div>
-
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-arrows-left-right"></i> Ayet Aralığı:</span>
-                            <select id="sel-group-start" class="pill-select-sm"></select>
-                            <span style="color:var(--gold-bright); font-weight:700;">—</span>
-                            <select id="sel-group-end" class="pill-select-sm"></select>
-                        </div>
-
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-arrows-up-down"></i> Yön:</span>
-                            <select id="sel-group-direction" class="pill-select-sm">
-                                <option value="forward" selected>⬇️ Yukarıdan Aşağı</option>
-                                <option value="reverse">⬆️ Aşağıdan Yukarı</option>
-                            </select>
-                        </div>
-
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-repeat"></i> Blok Tekrarı:</span>
-                            <select id="sel-group-repeats" class="pill-select-sm">
-                                <option value="2">2x</option>
-                                <option value="3" selected>3x</option>
-                                <option value="5">5x</option>
-                                <option value="10">10x</option>
-                                <option value="20">20x</option>
-                            </select>
-                        </div>
-
-                        <button id="btn-apply-group" class="btn-header gold-btn btn-sm">
-                            <i class="fa-solid fa-play"></i> Grubu Başlat
+                <!-- Çalışma Modları Değiştirici -->
+                <div class="studio-modes">
+                    <div class="mode-toggle-group">
+                        <button id="mode-ham" class="mode-toggle-btn active" title="Ham Sayfa Ezberi">
+                            <i class="fa-solid fa-star"></i> Ham
+                        </button>
+                        <button id="mode-chain-has" class="mode-toggle-btn" title="Haslama Modu">
+                            <i class="fa-solid fa-link"></i> Haslama
+                        </button>
+                        <button id="btn-toggle-strategy-panel" class="mode-toggle-btn gold-strategy-btn" title="Ayet Bölme & Strateji Paneli">
+                            <i class="fa-solid fa-scissors"></i> Strateji
                         </button>
                     </div>
                 </div>
 
-                <!-- 2. Alt Başlık: Ayet İçi Parçalama (Kelime Bölücü & Kümülatif) Kontrolleri -->
-                <div id="strat-controls-slice" class="strat-sub-controls" style="display:none;">
-                    <div class="strat-row">
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-scissors"></i> Parça Sayısı:</span>
-                            <select id="sel-slice-count" class="pill-select-sm">
-                                <option value="2">2 Parça</option>
-                                <option value="3" selected>3 Parça (Tavsiye)</option>
-                                <option value="4">4 Parça</option>
-                                <option value="5">5 Parça</option>
-                            </select>
-                        </div>
+                <!-- Sağ: Hızlı Sayfa Navigasyonu (◀ Sayfa 474 ▶) -->
+                <div class="page-navigator studio-nav-box">
+                    <button id="btn-prev-page" class="nav-page-btn" title="Önceki Sayfa (Sol Ok / A Tuşu)">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div id="badge-page-num" class="current-page-badge" title="Tıklayıp doğrudan sayfa yazabilirsiniz">Sayfa 474</div>
+                    <button id="btn-next-page" class="nav-page-btn" title="Sonraki Sayfa (Sağ Ok / D Tuşu)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-arrows-up-down"></i> Eklemeli Yön:</span>
-                            <select id="sel-slice-direction" class="pill-select-sm">
-                                <option value="reverse" selected>⬆️ Tersten Kümülatif (Son Parça ➔ Başa Eklemeli)</option>
-                                <option value="forward">⬇️ Sıralı Kümülatif (İlk Parça ➔ Sona Eklemeli)</option>
-                            </select>
-                        </div>
+            <!-- ================= Gelişmiş "Parçalayarak Ezberleme" Alt Paneli ================= -->
+            <div id="panel-ezber-strategy" class="ezber-strategy-container" style="display:none;">
+                <div class="strategy-inner">
+                    <div class="strategy-header-title">
+                        <i class="fa-solid fa-wand-magic-sparkles gold-icon"></i> <strong>Parçalayarak Ezberleme Stratejileri</strong>
+                        <span class="strategy-sub">Ayetleri bloklara ayırın, kelime kelime parçalayın veya tersten pekiştirin.</span>
+                    </div>
 
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-link"></i> Ezberleme Türü:</span>
-                            <select id="sel-slice-cumulative" class="pill-select-sm">
-                                <option value="true" selected>🔗 Kümülatif (Birleştirerek Zincirleme)</option>
-                                <option value="false">✂️ Bağımsız (Parça Parça)</option>
-                            </select>
-                        </div>
-
-                        <div class="strat-pill-group">
-                            <span class="strat-label"><i class="fa-solid fa-repeat"></i> Aşama Tekrarı:</span>
-                            <select id="sel-slice-repeats" class="pill-select-sm">
-                                <option value="2">2 Tekrar</option>
-                                <option value="3" selected>3 Tekrar</option>
-                                <option value="5">5 Tekrar</option>
-                                <option value="7">7 Tekrar</option>
-                                <option value="10">10 Tekrar</option>
-                            </select>
-                        </div>
-
-                        <button id="btn-start-slice" class="btn-header gold-btn btn-sm">
-                            <i class="fa-solid fa-play"></i> Parçalamalı Ezberi Başlat
+                    <!-- 4 Strateji Alt Başlığı (Sekmeler) -->
+                    <div class="strategy-tabs">
+                        <button id="btn-strat-standard" class="strat-tab-btn active" data-strategy="standard">
+                            <i class="fa-solid fa-arrow-down-1-9"></i> ⬇️ 1. Sıralı Standart
+                        </button>
+                        <button id="btn-strat-group" class="strat-tab-btn" data-strategy="group">
+                            <i class="fa-solid fa-layer-group"></i> 📑 2. Ayet Bloklama (Gruplu)
+                        </button>
+                        <button id="btn-strat-slice" class="strat-tab-btn" data-strategy="slice">
+                            <i class="fa-solid fa-scissors"></i> ✂️ 3. Ayet İçi Parçalama (Kelime)
+                        </button>
+                        <button id="btn-strat-reverse" class="strat-tab-btn" data-strategy="reverse">
+                            <i class="fa-solid fa-arrow-up-9-1"></i> ⬆️ 4. Tersten (Aşağıdan Yukarı)
                         </button>
                     </div>
-                    <div style="font-size:0.78rem; color:var(--gold-bright); margin-top:6px; opacity:0.9;">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> <strong>Akıllı Kelime Hizalama:</strong> Ayet kelimeleri ortadan bölünmez. Belirlenen tekrar tamamlandıkça bir önceki bölüm de eklenerek zincirleme ezber pekişir.
-                    </div>
-                </div>
 
-                <!-- 3. Alt Başlık: Tersten Okuma Kontrolleri -->
-                <div id="strat-controls-reverse" class="strat-sub-controls" style="display:none;">
-                    <div class="strat-row">
-                        <span style="font-size:0.84rem; color:var(--gold-bright);">
-                            <i class="fa-solid fa-info-circle"></i> <strong>Aşağıdan Yukarı (Tersten Okuma):</strong> Sayfa en alttaki son ayetten başlar, yukarı doğru sırayla okunarak ezber pekişir.
-                        </span>
-                        <button id="btn-start-reverse" class="btn-header gold-btn btn-sm">
-                            <i class="fa-solid fa-play"></i> Aşağıdan Yukarı Başlat
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                    <!-- 1. Alt Başlık: Gruplu Ayet Bloklama Kontrolleri -->
+                    <div id="strat-controls-group" class="strat-sub-controls" style="display:none;">
+                        <div class="strat-row">
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-bolt"></i> Hızlı Grup:</span>
+                                <button class="btn-quick-group" data-span="2">2'şerli</button>
+                                <button class="btn-quick-group active" data-span="3">3'erli</button>
+                                <button class="btn-quick-group" data-span="5">5'erli</button>
+                            </div>
 
-    <!-- ================= 3. Ana Mushaf Sahnesi & Görünüm Çubuğu (Main Content) ================= -->
-    <main class="main-content">
-        <!-- Mushaf Araç ve Görünüm Çubuğu (Toolbar) -->
-        <div class="view-toolbar">
-            <!-- Sol: 3 Net Görünüm Sekmesi -->
-            <div class="view-tabs">
-                <button id="tab-mushaf-live" class="view-tab active" title="İnteraktif 15 Satır Klasik Mushaf">
-                    <i class="fa-solid fa-book-quran"></i> <span>İnteraktif 15 Satır</span>
-                </button>
-                <button id="tab-mushaf-facsimile" class="view-tab" title="Orijinal Baskı Sayfa Fotoğrafı">
-                    <i class="fa-regular fa-image"></i> <span>Mushaf Baskısı</span>
-                </button>
-                <button id="tab-ayah-view" class="view-tab" title="Geniş Hatlı Ayet & Meal Kartları">
-                    <i class="fa-solid fa-list-check"></i> <span>Ayet & Meal Kartları</span>
-                </button>
-                <button id="btn-toolbar-strategy" class="view-tab gold-outline-tab" title="Ayet Bölme ve Parçalama Menüsünü Aç">
-                    <i class="fa-solid fa-scissors"></i> <span>Ayet Bölme</span>
-                </button>
-            </div>
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-arrows-left-right"></i> Ayet Aralığı:</span>
+                                <select id="sel-group-start" class="pill-select-sm"></select>
+                                <span style="color:var(--gold-bright); font-weight:700;">—</span>
+                                <select id="sel-group-end" class="pill-select-sm"></select>
+                            </div>
 
-            <!-- Sağ: Hızlı Tipografi & Görsel Ayarlar -->
-            <div class="mushaf-tools">
-                <!-- Kağıt Teması Seçici (🌙 Gece, 📜 Sepya, ☀️ Fildişi) -->
-                <div class="tool-group" title="Mushaf Kağıt Tonu">
-                    <button class="btn-paper-theme active" data-theme="night" title="Koyu Gece Zümrütü"><i class="fa-solid fa-moon"></i></button>
-                    <button class="btn-paper-theme" data-theme="sepia" title="Klasik Parşömen (Sıcak Sepya)"><i class="fa-solid fa-scroll"></i></button>
-                    <button class="btn-paper-theme" data-theme="cream" title="Fildişi Mushaf Kağıdı"><i class="fa-solid fa-sun"></i></button>
-                </div>
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-arrows-up-down"></i> Yön:</span>
+                                <select id="sel-group-direction" class="pill-select-sm">
+                                    <option value="forward" selected>⬇️ Yukarıdan Aşağı</option>
+                                    <option value="reverse">⬆️ Aşağıdan Yukarı</option>
+                                </select>
+                            </div>
 
-                <!-- Zoom Kontrolü -->
-                <div class="tool-group" title="Metin Boyutu">
-                    <button id="btn-zoom-out" class="tool-btn" title="Yazıyı Küçült"><i class="fa-solid fa-minus"></i></button>
-                    <span id="label-zoom" class="tool-label">100%</span>
-                    <button id="btn-zoom-in" class="tool-btn" title="Yazıyı Büyüt"><i class="fa-solid fa-plus"></i></button>
-                </div>
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-repeat"></i> Blok Tekrarı:</span>
+                                <select id="sel-group-repeats" class="pill-select-sm">
+                                    <option value="2">2x</option>
+                                    <option value="3" selected>3x</option>
+                                    <option value="5">5x</option>
+                                    <option value="10">10x</option>
+                                    <option value="20">20x</option>
+                                </select>
+                            </div>
 
-                <!-- Ayet Meali Çekmecesi Butonu -->
-                <button id="btn-toggle-translation-drawer" class="btn-header" title="Ayetlerin Türkçe Mealini Göster">
-                    <i class="fa-solid fa-language"></i> <span class="hide-mobile">Meali Göster</span>
-                </button>
-
-                <!-- Mushaf Hattı Seçici -->
-                <div class="setting-pill hat-selector-pill" title="Mushaf Hattı Seçimi">
-                    <label><i class="fa-solid fa-pen-nib"></i></label>
-                    <select id="select-mushaf-font" class="pill-select">
-                        <option value="hafiz-osman" selected>Hâfız Osman (15 Satır)</option>
-                        <option value="ahmed-husrev">Ahmed Hüsrev (Hayrât)</option>
-                        <option value="hasan-riza">Hasan Rıza (Osmanlı Neshi)</option>
-                        <option value="osman-taha">Osman Taha (Medine)</option>
-                        <option value="diyanet-digital">Diyanet Dijital</option>
-                    </select>
-                </div>
-
-                <!-- İmlâ Seçici -->
-                <div class="setting-pill imla-selector-pill" title="Kur'an Metni İmlâ Türü">
-                    <label><i class="fa-solid fa-spell-check"></i></label>
-                    <select id="select-mushaf-imla" class="pill-select">
-                        <option value="diyanet" selected>Diyanet / Türk İmlâsı</option>
-                        <option value="uthmani">Resm-i Medine (Uthmani)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= GÖRÜNÜM 1: İnteraktif Mushaf Sayfası (15 Satır) ================= -->
-        <div id="container-mushaf-live" class="mushaf-stage">
-            <!-- Yan Hızlı Sayfa Geçiş Butonları -->
-            <button class="stage-nav-arrow stage-nav-prev" id="btn-stage-prev" title="Önceki Sayfa">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <button class="stage-nav-arrow stage-nav-next" id="btn-stage-next" title="Sonraki Sayfa">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-
-            <div class="mushaf-book-wrapper" id="mushaf-scale-wrapper">
-                <!-- Otantik Osmanlı/Medine Tezhip Çerçevesi -->
-                <div class="mushaf-parchment-sheet">
-                    <!-- Üst Başlık Şeridi (Cüz, Sure Adı, Sayfa) -->
-                    <div class="sheet-header">
-                        <div class="sheet-corner-juz">
-                            <i class="fa-solid fa-diamond gold-icon"></i> <span id="mushaf-juz-title">24. Cüz</span>
-                        </div>
-                        <div class="sheet-center-surah">
-                            <span id="mushaf-surah-title">Fussilet Suresi</span>
-                            <div class="hat-name-sub"><i class="fa-solid fa-pen-nib"></i> Hattat Hâfız Osman • 15 Satır Âyet-Berkenar</div>
-                        </div>
-                        <div class="sheet-corner-page">
-                            <span id="mushaf-page-number">474</span> <i class="fa-solid fa-diamond gold-icon"></i>
+                            <button id="btn-apply-group" class="btn-header gold-btn btn-sm">
+                                <i class="fa-solid fa-play"></i> Grubu Başlat
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Kenar Cüz / Hizb Gülü Süslemesi -->
-                    <div class="sheet-side-ornament left">
-                        <div class="hizb-rosette" id="sheet-rosette">
-                            <span>CÜZ</span>
-                            <strong id="rosette-juz-num">24</strong>
+                    <!-- 2. Alt Başlık: Ayet İçi Parçalama (Kelime Bölücü & Kümülatif) Kontrolleri -->
+                    <div id="strat-controls-slice" class="strat-sub-controls" style="display:none;">
+                        <div class="strat-row">
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-scissors"></i> Parça Sayısı:</span>
+                                <select id="sel-slice-count" class="pill-select-sm">
+                                    <option value="2">2 Parça</option>
+                                    <option value="3" selected>3 Parça (Tavsiye)</option>
+                                    <option value="4">4 Parça</option>
+                                    <option value="5">5 Parça</option>
+                                </select>
+                            </div>
+
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-arrows-up-down"></i> Eklemeli Yön:</span>
+                                <select id="sel-slice-direction" class="pill-select-sm">
+                                    <option value="reverse" selected>⬆️ Tersten Kümülatif (Son Parça ➔ Başa Eklemeli)</option>
+                                    <option value="forward">⬇️ Sıralı Kümülatif (İlk Parça ➔ Sona Eklemeli)</option>
+                                </select>
+                            </div>
+
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-link"></i> Ezberleme Türü:</span>
+                                <select id="sel-slice-cumulative" class="pill-select-sm">
+                                    <option value="true" selected>🔗 Kümülatif (Birleştirerek Zincirleme)</option>
+                                    <option value="false">✂️ Bağımsız (Parça Parça)</option>
+                                </select>
+                            </div>
+
+                            <div class="strat-pill-group">
+                                <span class="strat-label"><i class="fa-solid fa-repeat"></i> Aşama Tekrarı:</span>
+                                <select id="sel-slice-repeats" class="pill-select-sm">
+                                    <option value="2">2 Tekrar</option>
+                                    <option value="3" selected>3 Tekrar</option>
+                                    <option value="5">5 Tekrar</option>
+                                    <option value="7">7 Tekrar</option>
+                                    <option value="10">10 Tekrar</option>
+                                </select>
+                            </div>
+
+                            <button id="btn-start-slice" class="btn-header gold-btn btn-sm">
+                                <i class="fa-solid fa-play"></i> Parçalamalı Ezberi Başlat
+                            </button>
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--gold-bright); margin-top:6px; opacity:0.9;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> <strong>Akıllı Kelime Hizalama:</strong> Ayet kelimeleri ortadan bölünmez. Belirlenen tekrar tamamlandıkça bir önceki bölüm de eklenerek zincirleme ezber pekişir.
                         </div>
                     </div>
-                    <div class="sheet-side-ornament right">
-                        <div class="page-side-tag" id="sheet-lesson-tag">HAM DERS</div>
-                    </div>
 
-                    <!-- 15 Satır Kur'an-ı Kerim Metin Alanı (Tıklanabilir & Vurgulu Ayetler) -->
-                    <div class="sheet-content" id="mushaf-text-flow" dir="rtl">
-                        <!-- JavaScript ile dinamik olarak doldurulur -->
-                    </div>
-
-                    <!-- Alt Bilgi ve Ders İpucu -->
-                    <div class="sheet-footer">
-                        <div class="sheet-lesson-tip">
-                            <i class="fa-solid fa-circle-info"></i> Ayete tıklayarak dinlemeyi başlatabilir, 5x tekrar veya mealini açabilirsiniz.
+                    <!-- 3. Alt Başlık: Tersten Okuma Kontrolleri -->
+                    <div id="strat-controls-reverse" class="strat-sub-controls" style="display:none;">
+                        <div class="strat-row">
+                            <span style="font-size:0.84rem; color:var(--gold-bright);">
+                                <i class="fa-solid fa-info-circle"></i> <strong>Aşağıdan Yukarı (Tersten Okuma):</strong> Sayfa en alttaki son ayetten başlar, yukarı doğru sırayla okunarak ezber pekişir.
+                            </span>
+                            <button id="btn-start-reverse" class="btn-header gold-btn btn-sm">
+                                <i class="fa-solid fa-play"></i> Aşağıdan Yukarı Başlat
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Ayet Hızlı Eylem Menüsü (Popup Tooltip) -->
-            <div id="ayah-quick-actions" class="ayah-action-popover" style="display: none;">
-                <button class="pop-btn" id="pop-btn-play"><i class="fa-solid fa-play"></i> Dinle</button>
-                <button class="pop-btn" id="pop-btn-repeat"><i class="fa-solid fa-repeat"></i> 5x Tekrar</button>
-                <button class="pop-btn" id="pop-btn-group-start" title="Grup Başlangıcı Yap"><i class="fa-solid fa-link"></i> Grup Başı</button>
-                <button class="pop-btn" id="pop-btn-group-end" title="Grup Sonu Yap"><i class="fa-solid fa-flag-checkered"></i> Grup Sonu</button>
-                <button class="pop-btn" id="pop-btn-slice" title="Ayet Bölücü ile ezberle"><i class="fa-solid fa-scissors"></i> Parçala</button>
-                <button class="pop-btn" id="pop-btn-meal"><i class="fa-solid fa-book-open"></i> Meal</button>
-            </div>
-        </div>
+        <!-- 2. Ana Mushaf Sahnesi & Görünüm Çubuğu -->
+        <main class="main-content">
+            <!-- Mushaf Araç ve Görünüm Çubuğu (Toolbar) -->
+            <div class="view-toolbar">
+                <!-- Sol: 3 Net Görünüm Sekmesi -->
+                <div class="view-tabs">
+                    <button id="tab-mushaf-live" class="view-tab active" title="İnteraktif 15 Satır Klasik Mushaf">
+                        <i class="fa-solid fa-book-quran"></i> <span>İnteraktif 15 Satır</span>
+                    </button>
+                    <button id="tab-mushaf-facsimile" class="view-tab" title="Orijinal Baskı Sayfa Fotoğrafı">
+                        <i class="fa-regular fa-image"></i> <span>Mushaf Baskısı</span>
+                    </button>
+                    <button id="tab-ayah-view" class="view-tab" title="Geniş Hatlı Ayet & Meal Kartları">
+                        <i class="fa-solid fa-list-check"></i> <span>Ayet & Meal Kartları</span>
+                    </button>
+                    <button id="btn-toolbar-strategy" class="view-tab gold-outline-tab" title="Ayet Bölme ve Parçalama Menüsünü Aç">
+                        <i class="fa-solid fa-scissors"></i> <span>Ayet Bölme</span>
+                    </button>
+                </div>
 
-        <!-- ================= GÖRÜNÜM 2: Faksimile Mushaf Baskısı ================= -->
-        <div id="container-mushaf-facsimile" class="mushaf-container" style="display:none;">
-            <div class="mushaf-frame">
-                <div class="mushaf-header-info">
-                    <span id="facsimile-juz-info">24. Cüz</span>
-                    <div class="facsimile-edition-picker">
-                        <label for="select-facsimile-edition"><i class="fa-solid fa-book-open"></i> Baskı Ekolü:</label>
-                        <select id="select-facsimile-edition" class="pill-select-sm">
-                            <option value="madani" selected>Medine-i Münevvere (Hattat Osman Taha)</option>
-                            <option value="tajweed">Renkli Tecvidli Mushaf</option>
-                            <option value="warsh">Varş Rivayeti Mushafı</option>
+                <!-- Sağ: Hızlı Tipografi & Görsel Ayarlar -->
+                <div class="mushaf-tools">
+                    <!-- Kağıt Teması Seçici (🌙 Gece, 📜 Sepya, ☀️ Fildişi) -->
+                    <div class="tool-group" title="Mushaf Kağıt Tonu">
+                        <button class="btn-paper-theme active" data-theme="night" title="Koyu Gece Zümrütü"><i class="fa-solid fa-moon"></i></button>
+                        <button class="btn-paper-theme" data-theme="sepia" title="Klasik Parşömen (Sıcak Sepya)"><i class="fa-solid fa-scroll"></i></button>
+                        <button class="btn-paper-theme" data-theme="cream" title="Fildişi Mushaf Kağıdı"><i class="fa-solid fa-sun"></i></button>
+                    </div>
+
+                    <!-- Zoom Kontrolü -->
+                    <div class="tool-group" title="Metin Boyutu">
+                        <button id="btn-zoom-out" class="tool-btn" title="Yazıyı Küçült"><i class="fa-solid fa-minus"></i></button>
+                        <span id="label-zoom" class="tool-label">100%</span>
+                        <button id="btn-zoom-in" class="tool-btn" title="Yazıyı Büyüt"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+
+                    <!-- Ayet Meali Çekmecesi Butonu -->
+                    <button id="btn-toggle-translation-drawer" class="btn-header" title="Ayetlerin Türkçe Mealini Göster">
+                        <i class="fa-solid fa-language"></i> <span class="hide-mobile">Meali Göster</span>
+                    </button>
+
+                    <!-- Mushaf Hattı Seçici -->
+                    <div class="setting-pill hat-selector-pill" title="Mushaf Hattı Seçimi">
+                        <label><i class="fa-solid fa-pen-nib"></i></label>
+                        <select id="select-mushaf-font" class="pill-select">
+                            <option value="hafiz-osman" selected>Hâfız Osman (15 Satır)</option>
+                            <option value="ahmed-husrev">Ahmed Hüsrev (Hayrât)</option>
+                            <option value="hasan-riza">Hasan Rıza (Osmanlı Neshi)</option>
+                            <option value="osman-taha">Osman Taha (Medine)</option>
+                            <option value="diyanet-digital">Diyanet Dijital</option>
                         </select>
                     </div>
-                    <span id="facsimile-surah-info">Fussilet Suresi</span>
-                    <span id="facsimile-page-label">Sayfa 474</span>
-                </div>
-                <div class="mushaf-img-wrapper" id="mushaf-img-wrapper">
-                    <div id="facsimile-loading-spinner" class="facsimile-loader">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        <span>Mushaf sayfası yükleniyor...</span>
+
+                    <!-- İmlâ Seçici -->
+                    <div class="setting-pill imla-selector-pill" title="Kur'an Metni İmlâ Türü">
+                        <label><i class="fa-solid fa-spell-check"></i></label>
+                        <select id="select-mushaf-imla" class="pill-select">
+                            <option value="diyanet" selected>Diyanet / Türk İmlâsı</option>
+                            <option value="uthmani">Resm-i Medine (Uthmani)</option>
+                        </select>
                     </div>
-                    <img id="mushaf-image" class="mushaf-page-img" src="" alt="Mushaf Baskısı" loading="eager">
                 </div>
             </div>
-        </div>
 
-        <!-- ================= GÖRÜNÜM 3: Dijital Ayet ve Diyanet Meali Kartları ================= -->
-        <div id="container-ayah-view" class="ayah-list-container" style="display:none;">
-            <!-- JavaScript ile doldurulur -->
-        </div>
+            <!-- ================= GÖRÜNÜM 1: İnteraktif Mushaf Sayfası (15 Satır) ================= -->
+            <div id="container-mushaf-live" class="mushaf-stage">
+                <!-- Yan Hızlı Sayfa Geçiş Butonları -->
+                <button class="stage-nav-arrow stage-nav-prev" id="btn-stage-prev" title="Önceki Sayfa">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="stage-nav-arrow stage-nav-next" id="btn-stage-next" title="Sonraki Sayfa">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
 
-        <!-- ================= Açılır Ayet Meali Çekmecesi (Translation Drawer) ================= -->
-        <aside id="translation-drawer" class="translation-drawer">
-            <div class="drawer-header">
-                <h3><i class="fa-solid fa-language"></i> Diyanet Türkçe Meali</h3>
-                <button id="btn-close-drawer" class="btn-close-modal">&times;</button>
+                <div class="mushaf-book-wrapper" id="mushaf-scale-wrapper">
+                    <!-- Otantik Osmanlı/Medine Tezhip Çerçevesi -->
+                    <div class="mushaf-parchment-sheet">
+                        <!-- Üst Başlık Şeridi (Cüz, Sure Adı, Sayfa) -->
+                        <div class="sheet-header">
+                            <div class="sheet-corner-juz">
+                                <i class="fa-solid fa-diamond gold-icon"></i> <span id="mushaf-juz-title">24. Cüz</span>
+                            </div>
+                            <div class="sheet-center-surah">
+                                <span id="mushaf-surah-title">Fussilet Suresi</span>
+                                <div class="hat-name-sub"><i class="fa-solid fa-pen-nib"></i> Hattat Hâfız Osman • 15 Satır Âyet-Berkenar</div>
+                            </div>
+                            <div class="sheet-corner-page">
+                                <span id="mushaf-page-number">474</span> <i class="fa-solid fa-diamond gold-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- Kenar Cüz / Hizb Gülü Süslemesi -->
+                        <div class="sheet-side-ornament left">
+                            <div class="hizb-rosette" id="sheet-rosette">
+                                <span>CÜZ</span>
+                                <strong id="rosette-juz-num">24</strong>
+                            </div>
+                        </div>
+                        <div class="sheet-side-ornament right">
+                            <div class="page-side-tag" id="sheet-lesson-tag">HAM DERS</div>
+                        </div>
+
+                        <!-- 15 Satır Kur'an-ı Kerim Metin Alanı (Tıklanabilir & Vurgulu Ayetler) -->
+                        <div class="sheet-content" id="mushaf-text-flow" dir="rtl">
+                            <!-- JavaScript ile dinamik olarak doldurulur -->
+                        </div>
+
+                        <!-- Alt Bilgi ve Ders İpucu -->
+                        <div class="sheet-footer">
+                            <div class="sheet-lesson-tip">
+                                <i class="fa-solid fa-circle-info"></i> Ayete tıklayarak dinlemeyi başlatabilir, 5x tekrar veya mealini açabilirsiniz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ayet Hızlı Eylem Menüsü (Popup Tooltip) -->
+                <div id="ayah-quick-actions" class="ayah-action-popover" style="display: none;">
+                    <button class="pop-btn" id="pop-btn-play"><i class="fa-solid fa-play"></i> Dinle</button>
+                    <button class="pop-btn" id="pop-btn-repeat"><i class="fa-solid fa-repeat"></i> 5x Tekrar</button>
+                    <button class="pop-btn" id="pop-btn-group-start" title="Grup Başlangıcı Yap"><i class="fa-solid fa-link"></i> Grup Başı</button>
+                    <button class="pop-btn" id="pop-btn-group-end" title="Grup Sonu Yap"><i class="fa-solid fa-flag-checkered"></i> Grup Sonu</button>
+                    <button class="pop-btn" id="pop-btn-slice" title="Ayet Bölücü ile ezberle"><i class="fa-solid fa-scissors"></i> Parçala</button>
+                    <button class="pop-btn" id="pop-btn-meal"><i class="fa-solid fa-book-open"></i> Meal</button>
+                </div>
             </div>
-            <div class="drawer-body" id="drawer-ayahs-list">
+
+            <!-- ================= GÖRÜNÜM 2: Faksimile Mushaf Baskısı ================= -->
+            <div id="container-mushaf-facsimile" class="mushaf-container" style="display:none;">
+                <div class="mushaf-frame">
+                    <div class="mushaf-header-info">
+                        <span id="facsimile-juz-info">24. Cüz</span>
+                        <div class="facsimile-edition-picker">
+                            <label for="select-facsimile-edition"><i class="fa-solid fa-book-open"></i> Baskı Ekolü:</label>
+                            <select id="select-facsimile-edition" class="pill-select-sm">
+                                <option value="madani" selected>Medine-i Münevvere (Hattat Osman Taha)</option>
+                                <option value="tajweed">Renkli Tecvidli Mushaf</option>
+                                <option value="warsh">Varş Rivayeti Mushafı</option>
+                            </select>
+                        </div>
+                        <span id="facsimile-surah-info">Fussilet Suresi</span>
+                        <span id="facsimile-page-label">Sayfa 474</span>
+                    </div>
+                    <div class="mushaf-img-wrapper" id="mushaf-img-wrapper">
+                        <div id="facsimile-loading-spinner" class="facsimile-loader">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <span>Mushaf sayfası yükleniyor...</span>
+                        </div>
+                        <img id="mushaf-image" class="mushaf-page-img" src="" alt="Mushaf Baskısı" loading="eager">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= GÖRÜNÜM 3: Dijital Ayet ve Diyanet Meali Kartları ================= -->
+            <div id="container-ayah-view" class="ayah-list-container" style="display:none;">
                 <!-- JavaScript ile doldurulur -->
             </div>
-        </aside>
-    </main>
 
-    <!-- ================= 4. Akıllı Alt Ses & Tekrar Stüdyosu (Pro Audio Deck) ================= -->
-    <footer class="audio-deck">
-        <div class="deck-inner">
-            <!-- Sol: 🎙️ Okuyucu (Kâri) Değiştir & Parça Bilgisi -->
-            <div class="deck-left-info">
-                <button id="btn-open-reciters" class="deck-reciter-btn" title="Kâriyi Değiştir (16 Kâri)">
-                    <div class="current-reciter-avatar" id="deck-reciter-avatar">
-                        <i class="fa-solid fa-microphone-lines"></i>
+            <!-- ================= Açılır Ayet Meali Çekmecesi ================= -->
+            <aside id="translation-drawer" class="translation-drawer">
+                <div class="drawer-header">
+                    <h3><i class="fa-solid fa-language"></i> Diyanet Türkçe Meali</h3>
+                    <button id="btn-close-drawer" class="btn-close-modal">&times;</button>
+                </div>
+                <div class="drawer-body" id="drawer-ayahs-list">
+                    <!-- JavaScript ile doldurulur -->
+                </div>
+            </aside>
+        </main>
+
+        <!-- 3. Sabit Alt Ses & Tekrar Stüdyosu (Pro Audio Deck) -->
+        <footer class="audio-deck">
+            <div class="deck-inner">
+                <!-- Sol: 🎙️ Okuyucu (Kâri) Değiştir & Parça Bilgisi -->
+                <div class="deck-left-info">
+                    <button id="btn-open-reciters" class="deck-reciter-btn" title="Kâriyi Değiştir (16 Kâri)">
+                        <div class="current-reciter-avatar" id="deck-reciter-avatar">
+                            <i class="fa-solid fa-microphone-lines"></i>
+                        </div>
+                        <div class="reciter-badge-col">
+                            <span class="reciter-tag">🎙️ OKUYUCU DEĞİŞTİR</span>
+                            <span id="header-reciter-name" class="reciter-curr-name">Suûd eş-Şüraym</span>
+                        </div>
+                    </button>
+                    <div class="track-meta">
+                        <div id="deck-track-title" class="track-title">Fussilet Suresi 1. Ayet</div>
+                        <div id="deck-track-sub" class="track-sub">Sayfa 474 • Ham Ders • Tekrar 1/3</div>
                     </div>
-                    <div class="reciter-badge-col">
-                        <span class="reciter-tag">🎙️ OKUYUCU DEĞİŞTİR</span>
-                        <span id="header-reciter-name" class="reciter-curr-name">Suûd eş-Şüraym</span>
+                </div>
+
+                <!-- Orta: Oynatma Kontrolleri & İlerleme Çubuğu -->
+                <div class="deck-center-controls">
+                    <div class="transport-buttons">
+                        <button id="btn-prev-ayah" class="btn-deck-control" title="Önceki Ayet (Sol Ok)">
+                            <i class="fa-solid fa-backward-step"></i>
+                        </button>
+                        <button id="btn-deck-play" class="btn-deck-play" title="Oynat / Duraklat (Boşluk Tuşu)">
+                            <i id="deck-play-icon" class="fa-solid fa-play"></i>
+                        </button>
+                        <button id="btn-next-ayah" class="btn-deck-control" title="Sonraki Ayet (Sağ Ok)">
+                            <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                        <!-- Talebe Nefes Payı Geri Sayımı -->
+                        <div id="gap-countdown-badge" class="gap-indicator">
+                            <i class="fa-solid fa-stopwatch"></i> Nefes Payı: <span id="gap-seconds">3</span>s
+                        </div>
                     </div>
-                </button>
-                <div class="track-meta">
-                    <div id="deck-track-title" class="track-title">Fussilet Suresi 1. Ayet</div>
-                    <div id="deck-track-sub" class="track-sub">Sayfa 474 • Ham Ders • Tekrar 1/3</div>
+
+                    <!-- İlerleme Çubuğu -->
+                    <div class="progress-bar-container">
+                        <span id="time-current">0:00</span>
+                        <div id="progress-track" class="progress-track">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <span id="time-duration">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Sağ: Tilavet & Tekrar Hap Ayarları -->
+                <div class="deck-right-settings">
+                    <!-- Ayet Tekrarı -->
+                    <div class="setting-pill" title="Her Ayetin Tekrar Sayısı">
+                        <label><i class="fa-solid fa-repeat"></i> Tekrar</label>
+                        <select id="select-repeats" class="pill-select">
+                            <option value="1">1x</option>
+                            <option value="3" selected>3x</option>
+                            <option value="5">5x</option>
+                            <option value="7">7x</option>
+                            <option value="10">10x</option>
+                            <option value="20">20x</option>
+                            <option value="-1">∞</option>
+                        </select>
+                    </div>
+
+                    <!-- Okuma Hızı -->
+                    <div class="setting-pill" title="Okuma Hızı">
+                        <label><i class="fa-solid fa-gauge-high"></i> Hız</label>
+                        <select id="select-speed" class="pill-select">
+                            <option value="0.5">0.50x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="0.85">0.85x</option>
+                            <option value="1.0" selected>1.0x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.50x</option>
+                            <option value="2.0">2.0x</option>
+                        </select>
+                    </div>
+
+                    <!-- Talebe Nefes Payı -->
+                    <div class="setting-pill" title="Ayet bittikten sonra talebenin kendi sesinde tekrar etmesi için bekleme süresi">
+                        <label><i class="fa-solid fa-hourglass-half"></i> Nefes</label>
+                        <select id="select-gap" class="pill-select">
+                            <option value="0">0 sn</option>
+                            <option value="2">2 sn</option>
+                            <option value="3" selected>3 sn</option>
+                            <option value="5">5 sn</option>
+                            <option value="10">10 sn</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+        </footer>
+    </div>
 
-            <!-- Orta: Oynatma Kontrolleri & İlerleme Çubuğu -->
-            <div class="deck-center-controls">
-                <div class="transport-buttons">
-                    <button id="btn-prev-ayah" class="btn-deck-control" title="Önceki Ayet (Sol Ok)">
-                        <i class="fa-solid fa-backward-step"></i>
-                    </button>
-                    <button id="btn-deck-play" class="btn-deck-play" title="Oynat / Duraklat (Boşluk Tuşu)">
-                        <i id="deck-play-icon" class="fa-solid fa-play"></i>
-                    </button>
-                    <button id="btn-next-ayah" class="btn-deck-control" title="Sonraki Ayet (Sağ Ok)">
-                        <i class="fa-solid fa-forward-step"></i>
-                    </button>
-                    <!-- Talebe Nefes Payı Geri Sayımı -->
-                    <div id="gap-countdown-badge" class="gap-indicator">
-                        <i class="fa-solid fa-stopwatch"></i> Nefes Payı: <span id="gap-seconds">3</span>s
-                    </div>
-                </div>
-
-                <!-- İlerleme Çubuğu -->
-                <div class="progress-bar-container">
-                    <span id="time-current">0:00</span>
-                    <div id="progress-track" class="progress-track">
-                        <div id="progress-fill" class="progress-fill"></div>
-                    </div>
-                    <span id="time-duration">0:00</span>
-                </div>
-            </div>
-
-            <!-- Sağ: Tilavet & Tekrar Hap Ayarları (Tekrar, Hız, Nefes Payı) -->
-            <div class="deck-right-settings">
-                <!-- Ayet Tekrarı -->
-                <div class="setting-pill" title="Her Ayetin Tekrar Sayısı">
-                    <label><i class="fa-solid fa-repeat"></i> Tekrar</label>
-                    <select id="select-repeats" class="pill-select">
-                        <option value="1">1x</option>
-                        <option value="3" selected>3x</option>
-                        <option value="5">5x</option>
-                        <option value="7">7x</option>
-                        <option value="10">10x</option>
-                        <option value="20">20x</option>
-                        <option value="-1">∞</option>
-                    </select>
-                </div>
-
-                <!-- Okuma Hızı -->
-                <div class="setting-pill" title="Okuma Hızı">
-                    <label><i class="fa-solid fa-gauge-high"></i> Hız</label>
-                    <select id="select-speed" class="pill-select">
-                        <option value="0.5">0.50x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="0.85">0.85x</option>
-                        <option value="1.0" selected>1.0x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.50x</option>
-                        <option value="2.0">2.0x</option>
-                    </select>
-                </div>
-
-                <!-- Talebe Nefes Payı -->
-                <div class="setting-pill" title="Ayet bittikten sonra talebenin kendi sesinde tekrar etmesi için bekleme süresi">
-                    <label><i class="fa-solid fa-hourglass-half"></i> Nefes</label>
-                    <select id="select-gap" class="pill-select">
-                        <option value="0">0 sn</option>
-                        <option value="2">2 sn</option>
-                        <option value="3" selected>3 sn</option>
-                        <option value="5">5 sn</option>
-                        <option value="10">10 sn</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- ================= MODAL 1: 30 Cüz x 20 Dönüş İnteraktif Hafızlık Ağacı / Matrisi ================= -->
+    <!-- ================= MODAL 1: 30 Cüz x 20 Dönüş Hafızlık Matrisi ================= -->
     <div id="modal-matrix" class="modal-backdrop">
         <div class="modal-box">
             <div class="modal-header">
@@ -648,7 +783,7 @@
             </div>
             <div class="modal-body">
                 <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:16px;">
-                    Türkiye'de ve İslam dünyasında kabul görmüş meşhur Kur'an hatlarından dilediğinizi seçebilirsiniz. Seçtiğiniz hat anında Mushaf sayfasına ve tüm ayetlere uygulanır.
+                    Türkiye'de ve İslam dünyasında kabul görmüş meşhur Kur'an hatlarından dilediğinizi seçebilirsiniz.
                 </p>
                 <div class="reciter-grid">
                     <!-- Hat 1: Hafız Osman -->
@@ -695,7 +830,7 @@
             </div>
             <div class="modal-body">
                 <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:14px;">
-                    Aşağıdaki listeden dilediğiniz cüze tıklayarak haslamayı doğrudan o cüzden başlatabilirsiniz. Sayfa bittiğinde otomatik bir sonraki cüze geçilir.
+                    Aşağıdaki listeden dilediğiniz cüze tıklayarak haslamayı doğrudan o cüzden başlatabilirsiniz.
                 </p>
                 <div id="chain-items-grid" class="chain-items-grid">
                     <!-- Dinamik olarak doldurulur -->
@@ -713,6 +848,10 @@
             </div>
             <div class="modal-body">
                 <div class="shortcuts-grid">
+                    <div class="shortcut-row">
+                        <span class="shortcut-desc">Ana Menü / Çalışma Stüdyosu Geçişi</span>
+                        <div class="shortcut-keys"><kbd>ESC</kbd> / <kbd>H</kbd></div>
+                    </div>
                     <div class="shortcut-row">
                         <span class="shortcut-desc">Oynat / Duraklat</span>
                         <div class="shortcut-keys"><kbd>Boşluk</kbd> / <kbd>Space</kbd></div>
@@ -734,10 +873,6 @@
                         <div class="shortcut-keys"><kbd>M</kbd></div>
                     </div>
                     <div class="shortcut-row">
-                        <span class="shortcut-desc">Hafızlık Matrisini Aç</span>
-                        <div class="shortcut-keys"><kbd>H</kbd></div>
-                    </div>
-                    <div class="shortcut-row">
                         <span class="shortcut-desc">Hızlı Arama / Sayfaya Git</span>
                         <div class="shortcut-keys"><kbd>/</kbd> veya <kbd>S</kbd></div>
                     </div>
@@ -746,7 +881,7 @@
         </div>
     </div>
 
-    <!-- ================= MODAL 7: Çevrim Dışı (Offline) Depolama & İndirici Hub ================= -->
+    <!-- ================= MODAL 7: Çevrim Dışı (Offline) Depolama ================= -->
     <div id="modal-offline" class="modal-backdrop">
         <div class="modal-box" style="max-width:680px;">
             <div class="modal-header">
@@ -822,7 +957,7 @@
         </div>
     </div>
 
-    <!-- ================= MODAL 8: Çoklu Platform (PC, iOS, Android, Huawei) Kurulum Rehberi ================= -->
+    <!-- ================= MODAL 8: PWA Cihaz Kurulum Rehberi ================= -->
     <div id="modal-install" class="modal-backdrop">
         <div class="modal-box" style="max-width:720px;">
             <div class="modal-header">
@@ -831,7 +966,7 @@
             </div>
             <div class="modal-body">
                 <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:18px;">
-                    <strong>Hafız Muhafız</strong>, hiçbir uygulama mağazasına (Google Play / App Store) bağımlı olmadan <strong>Progressive Web App (PWA)</strong> teknolojisiyle tüm cihazlarınızda yerel bir uygulama gibi çalışır.
+                    <strong>Hafız Muhafız</strong>, hiçbir uygulama mağazasına bağımlı olmadan <strong>Progressive Web App (PWA)</strong> teknolojisiyle tüm cihazlarınızda yerel bir program gibi çalışır.
                 </p>
 
                 <div class="device-guides-grid">
@@ -847,11 +982,10 @@
                         <ol class="device-steps">
                             <li>Adres çubuğunun en sağındaki <strong>"Uygulamayı Yükle" (<i class="fa-solid fa-download"></i>)</strong> simgesine tıklayın.</li>
                             <li><strong>"Yükle"</strong> butonuna basın.</li>
-                            <li>Masaüstünüzde ve Başlat menünüzde bağımsız çalışan bir programa dönüşür.</li>
                         </ol>
                     </div>
 
-                    <!-- 2. Apple iOS (iPhone & iPad) -->
+                    <!-- 2. Apple iOS -->
                     <div class="device-guide-card">
                         <div class="device-guide-header">
                             <i class="fa-brands fa-apple device-icon ios"></i>
@@ -861,13 +995,12 @@
                             </div>
                         </div>
                         <ol class="device-steps">
-                            <li>Safari'de alt kısımdaki <strong>Paylaş (<i class="fa-solid fa-arrow-up-from-bracket"></i>)</strong> butonuna dokunun.</li>
-                            <li>Menüyü aşağı kaydırıp <strong>"Ana Ekrana Ekle"</strong> seçeneğine tıklayın.</li>
-                            <li>Sağ üstteki <strong>"Ekle"</strong> butonuna basın. Tam ekran açılır.</li>
+                            <li>Safari'de alttaki <strong>Paylaş (<i class="fa-solid fa-arrow-up-from-bracket"></i>)</strong> butonuna dokunun.</li>
+                            <li><strong>"Ana Ekrana Ekle"</strong> seçeneğine tıklayın.</li>
                         </ol>
                     </div>
 
-                    <!-- 3. Android (Samsung, Xiaomi, vb.) -->
+                    <!-- 3. Android -->
                     <div class="device-guide-card">
                         <div class="device-guide-header">
                             <i class="fa-brands fa-android device-icon android"></i>
@@ -878,12 +1011,11 @@
                         </div>
                         <ol class="device-steps">
                             <li>Sağ üstteki <strong>üç nokta (⋮)</strong> menüsüne dokunun.</li>
-                            <li><strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong>ye dokunun.</li>
-                            <li>Uygulama telefonunuzun ana ekranına eklenir.</li>
+                            <li><strong>"Uygulamayı Yükle" / "Ana Ekrana Ekle"</strong>ye dokunun.</li>
                         </ol>
                     </div>
 
-                    <!-- 4. Huawei (HarmonyOS & EMUI) -->
+                    <!-- 4. Huawei -->
                     <div class="device-guide-card">
                         <div class="device-guide-header">
                             <i class="fa-solid fa-mobile-screen-button device-icon huawei"></i>
@@ -893,9 +1025,8 @@
                             </div>
                         </div>
                         <ol class="device-steps">
-                            <li>Google Hizmetleri gerekmez! Huawei Tarayıcısı'nda sağ alttaki <strong>menü</strong> simgesine dokunun.</li>
-                            <li><strong>"Kısayol Oluştur" / "Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
-                            <li>Çevrim dışı IndexedDB desteğiyle internet olmadan da kesintisiz çalışır.</li>
+                            <li>Huawei Tarayıcısı'nda sağ alttaki <strong>menü</strong> simgesine dokunun.</li>
+                            <li><strong>"Kısayol Oluştur" / "Ana Ekrana Ekle"</strong>ye dokunun.</li>
                         </ol>
                     </div>
                 </div>
@@ -905,7 +1036,6 @@
                     <div style="font-weight:700; color:var(--gold-bright); margin-bottom:6px;">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Otomatik Cihaz Kurulumu
                     </div>
-                    <p style="font-size:0.8rem; color:var(--text-main); margin-bottom:10px;">Tarayıcınız tek tıkla yüklemeyi destekliyorsa aşağıdaki butona basabilirsiniz:</p>
                     <button id="btn-trigger-pwa-install" class="btn-header gold-btn" style="display:inline-flex;">
                         <i class="fa-solid fa-cloud-arrow-down"></i> Şimdi Bu Cihaza Yükle
                     </button>
@@ -915,10 +1045,10 @@
     </div>
 
     <!-- Uygulama Scriptleri -->
-    <script src="quran-data.js?v=6"></script>
-    <script src="hafiz-engine.js?v=6"></script>
-    <script src="audio-engine.js?v=6"></script>
-    <script src="offline-engine.js?v=6"></script>
-    <script src="app.js?v=6"></script>
+    <script src="quran-data.js?v=7"></script>
+    <script src="hafiz-engine.js?v=7"></script>
+    <script src="audio-engine.js?v=7"></script>
+    <script src="offline-engine.js?v=7"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>
