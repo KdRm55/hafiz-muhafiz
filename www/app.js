@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
         mushafFont: 'hafiz-osman', // 'hafiz-osman', 'ahmed-husrev', 'hasan-riza', 'osman-taha', 'diyanet-digital'
         imlaMode: 'diyanet',   // 'diyanet' (Temiz Türk/Diyanet İmlâsı), 'uthmani' (Medine Resm-i Osmanî)
-        facsimileType: 'madani', // 'madani', 'tajweed', 'warsh'
+        facsimileType: 'diyanet', // 'diyanet' (Diyanet İşleri Başkanlığı 15 Satır), 'madani', 'tajweed', 'warsh'
         chainHaslama: {
             targetRotation: 1,
             fromJuz: 1,
@@ -29,11 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const FONT_METADATA = {
-        'hafiz-osman': { name: 'Hattat Hâfız Osman', sub: 'Hattat Hâfız Osman • 15 Satır Âyet-Berkenar' },
-        'ahmed-husrev': { name: 'Hattat Ahmed Hüsrev', sub: 'Hattat Ahmed Hüsrev Altınbaşak • Tevâfuklu Hayrât Hattı' },
+        'hafiz-osman': { name: 'Diyanet / Hâfız Osman', sub: 'Diyanet İşleri Başkanlığı • 15 Satır Âyet-Berkenar Standart Mushafı' },
+        'diyanet-digital': { name: 'Diyanet Dijital Hat', sub: 'Diyanet İşleri Başkanlığı Resmi Dijital Hattı' },
         'hasan-riza': { name: 'Hattat Hasan Rıza', sub: 'Hattat Hasan Rıza Efendi • Klasik Osmanlı Neshi' },
-        'osman-taha': { name: 'Hattat Osman Taha', sub: 'Hattat Osman Taha • Medine Mushaf Hattı' },
-        'diyanet-digital': { name: 'Diyanet Bilgisayar', sub: 'Diyanet Dijital Bilgisayar Hattı' }
+        'ahmed-husrev': { name: 'Hattat Ahmed Hüsrev', sub: 'Hattat Ahmed Hüsrev Altınbaşak • Tevâfuklu Hayrât Hattı' },
+        'osman-taha': { name: 'Hattat Osman Taha', sub: 'Hattat Osman Taha • Medine Mushaf Hattı' }
     };
 
     // Türk & Osmanlı Kur'an İmlâsı Temizleyici (Yazım Hatalarını ve Uyumsuz Glifleri Düzeltir)
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Taranmış Mushaf Görseli
-        const facType = state.facsimileType || 'madani';
+        const facType = state.facsimileType || 'diyanet';
         if (facsimileLoadingSpinner) facsimileLoadingSpinner.style.display = 'flex';
         mushafImage.style.opacity = '0.3';
         mushafImage.onload = () => {

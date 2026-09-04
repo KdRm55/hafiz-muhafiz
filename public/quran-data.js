@@ -166,21 +166,26 @@ const QURAN_DATA = {
         return this.juzList.find(j => pageNumber >= j.startPage && pageNumber <= j.endPage) || this.juzList[0];
     },
 
-    // Yüksek Çözünürlüklü Mushaf Sayfası Görsel URL'si (KFGQPC Medine & Tecvidli)
-    getPageImageUrl(pageNumber, type = 'madani') {
+    // Yüksek Çözünürlüklü Mushaf Sayfası Görsel URL'si (Diyanet 15 Satır, Medine & Tecvidli)
+    getPageImageUrl(pageNumber, type = 'diyanet') {
         if (type === 'tajweed') {
             return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/easyquran.com/hafs-tajweed/${pageNumber}.jpg`;
         } else if (type === 'warsh') {
             return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/warsh/${pageNumber}.jpg`;
+        } else if (type === 'madani') {
+            return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/${pageNumber}.jpg`;
         }
+        // 'diyanet' - Diyanet İşleri Başkanlığı 15 Satır Standart Âyet-Berkenar Mushafı
         return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/${pageNumber}.jpg`;
     },
 
-    getFallbackPageImageUrl(pageNumber, type = 'madani') {
+    getFallbackPageImageUrl(pageNumber, type = 'diyanet') {
         if (type === 'tajweed') {
             return `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/easyquran.com/hafs-tajweed/${pageNumber}.jpg`;
         } else if (type === 'warsh') {
             return `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/warsh/${pageNumber}.jpg`;
+        } else if (type === 'madani') {
+            return `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/hafs-wasat/${pageNumber}.jpg`;
         }
         return `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/hafs-wasat/${pageNumber}.jpg`;
     }

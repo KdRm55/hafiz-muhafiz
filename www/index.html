@@ -178,17 +178,17 @@
                 </div>
             </div>
 
-            <!-- Görev 4: Serbest Mushaf & Tilavet -->
+            <!-- Görev 4: Diyanet Mushafı & Tilavet -->
             <div class="dash-task-card" id="btn-task-free">
                 <div class="task-card-icon blue-bg">
                     <i class="fa-solid fa-book-quran"></i>
                 </div>
                 <div class="task-card-body">
-                    <div class="task-tag">MUSHAF & TİLAVET</div>
-                    <h3 class="task-title">📖 4. Serbest Mushaf & Dinleme</h3>
-                    <p class="task-desc">1-604 sayfa arasında serbestçe gezinin, 16 kâriden dilediğinizi dinleyin ve mealleri okuyun.</p>
+                    <div class="task-tag">TÜRKİYE DİYANET MUSHAF</div>
+                    <h3 class="task-title">📖 4. Diyanet Mushafı & Tilavet</h3>
+                    <p class="task-desc">Diyanet İşleri Başkanlığı 15 Satır Âyet-Berkenar Mushafı ile 604 sayfayı inceleyin, 16 kâriden dinleyin.</p>
                     <div class="task-meta">
-                        <span class="task-pill">604 Sayfa • 114 Sure</span>
+                        <span class="task-pill gold-pill">15 Satır Standart Diyanet</span>
                     </div>
                 </div>
                 <div class="task-action-arrow">
@@ -431,13 +431,13 @@
             <div class="view-toolbar">
                 <!-- Sol: 3 Net Görünüm Sekmesi -->
                 <div class="view-tabs">
-                    <button id="tab-mushaf-live" class="view-tab active" title="İnteraktif 15 Satır Klasik Mushaf">
-                        <i class="fa-solid fa-book-quran"></i> <span>İnteraktif 15 Satır</span>
+                    <button id="tab-mushaf-live" class="view-tab active" title="Diyanet İşleri Başkanlığı 15 Satır Standart Âyet-Berkenar Mushafı">
+                        <i class="fa-solid fa-book-quran"></i> <span>Diyanet 15 Satır Mushaf</span>
                     </button>
-                    <button id="tab-mushaf-facsimile" class="view-tab" title="Orijinal Baskı Sayfa Fotoğrafı">
-                        <i class="fa-regular fa-image"></i> <span>Mushaf Baskısı</span>
+                    <button id="tab-mushaf-facsimile" class="view-tab" title="Diyanet Orijinal Mushaf Tıpkıbasımı">
+                        <i class="fa-solid fa-book-open"></i> <span>Diyanet Mushaf Baskısı</span>
                     </button>
-                    <button id="tab-ayah-view" class="view-tab" title="Geniş Hatlı Ayet & Meal Kartları">
+                    <button id="tab-ayah-view" class="view-tab" title="Geniş Hatlı Ayet & Diyanet Meali Kartları">
                         <i class="fa-solid fa-list-check"></i> <span>Ayet & Meal Kartları</span>
                     </button>
                     <button id="btn-toolbar-strategy" class="view-tab gold-outline-tab" title="Ayet Bölme ve Parçalama Menüsünü Aç">
@@ -463,18 +463,18 @@
 
                     <!-- Ayet Meali Çekmecesi Butonu -->
                     <button id="btn-toggle-translation-drawer" class="btn-header" title="Ayetlerin Türkçe Mealini Göster">
-                        <i class="fa-solid fa-language"></i> <span class="hide-mobile">Meali Göster</span>
+                        <i class="fa-solid fa-language"></i> <span class="hide-mobile">Diyanet Meali</span>
                     </button>
 
                     <!-- Mushaf Hattı Seçici -->
                     <div class="setting-pill hat-selector-pill" title="Mushaf Hattı Seçimi">
                         <label><i class="fa-solid fa-pen-nib"></i></label>
                         <select id="select-mushaf-font" class="pill-select">
-                            <option value="hafiz-osman" selected>Hâfız Osman (15 Satır)</option>
-                            <option value="ahmed-husrev">Ahmed Hüsrev (Hayrât)</option>
+                            <option value="hafiz-osman" selected>Diyanet / Hâfız Osman (15 Satır)</option>
+                            <option value="diyanet-digital">Diyanet Dijital Hattı</option>
                             <option value="hasan-riza">Hasan Rıza (Osmanlı Neshi)</option>
+                            <option value="ahmed-husrev">Ahmed Hüsrev (Hayrât Tevâfuklu)</option>
                             <option value="osman-taha">Osman Taha (Medine)</option>
-                            <option value="diyanet-digital">Diyanet Dijital</option>
                         </select>
                     </div>
 
@@ -500,7 +500,7 @@
                 </button>
 
                 <div class="mushaf-book-wrapper" id="mushaf-scale-wrapper">
-                    <!-- Otantik Osmanlı/Medine Tezhip Çerçevesi -->
+                    <!-- Otantik Osmanlı/Diyanet Tezhip Çerçevesi -->
                     <div class="mushaf-parchment-sheet">
                         <!-- Üst Başlık Şeridi (Cüz, Sure Adı, Sayfa) -->
                         <div class="sheet-header">
@@ -509,7 +509,7 @@
                             </div>
                             <div class="sheet-center-surah">
                                 <span id="mushaf-surah-title">Fussilet Suresi</span>
-                                <div class="hat-name-sub"><i class="fa-solid fa-pen-nib"></i> Hattat Hâfız Osman • 15 Satır Âyet-Berkenar</div>
+                                <div class="hat-name-sub"><i class="fa-solid fa-pen-nib"></i> Diyanet İşleri Başkanlığı • 15 Satır Âyet-Berkenar Standart Mushafı</div>
                             </div>
                             <div class="sheet-corner-page">
                                 <span id="mushaf-page-number">474</span> <i class="fa-solid fa-diamond gold-icon"></i>
@@ -535,7 +535,7 @@
                         <!-- Alt Bilgi ve Ders İpucu -->
                         <div class="sheet-footer">
                             <div class="sheet-lesson-tip">
-                                <i class="fa-solid fa-circle-info"></i> Ayete tıklayarak dinlemeyi başlatabilir, 5x tekrar veya mealini açabilirsiniz.
+                                <i class="fa-solid fa-circle-info"></i> Diyanet Standart Mushafı: Ayete tıklayarak dinlemeyi başlatabilir, 5x tekrar veya mealini açabilirsiniz.
                             </div>
                         </div>
                     </div>
@@ -560,7 +560,8 @@
                         <div class="facsimile-edition-picker">
                             <label for="select-facsimile-edition"><i class="fa-solid fa-book-open"></i> Baskı Ekolü:</label>
                             <select id="select-facsimile-edition" class="pill-select-sm">
-                                <option value="madani" selected>Medine-i Münevvere (Hattat Osman Taha)</option>
+                                <option value="diyanet" selected>Diyanet İşleri Başkanlığı (15 Satır Âyet-Berkenar)</option>
+                                <option value="madani">Medine-i Münevvere (Hattat Osman Taha)</option>
                                 <option value="tajweed">Renkli Tecvidli Mushaf</option>
                                 <option value="warsh">Varş Rivayeti Mushafı</option>
                             </select>
@@ -786,17 +787,17 @@
                     Türkiye'de ve İslam dünyasında kabul görmüş meşhur Kur'an hatlarından dilediğinizi seçebilirsiniz.
                 </p>
                 <div class="reciter-grid">
-                    <!-- Hat 1: Hafız Osman -->
+                    <!-- Hat 1: Diyanet / Hafız Osman -->
                     <div class="reciter-card active" data-font="hafiz-osman">
-                        <div class="reciter-name"><i class="fa-solid fa-pen-fancy"></i> Hattat Hâfız Osman (15 Satır Âyet-Berkenar)</div>
-                        <div class="reciter-style">Osmanlı Ekolü • Türkiye Kur'an Kursları & Hafızlık Standardı</div>
-                        <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Ayetlerin sayfada tam bittiği klasik Türk hafızlık mizanpajı.</div>
+                        <div class="reciter-name"><i class="fa-solid fa-pen-fancy"></i> Diyanet / Hattat Hâfız Osman (15 Satır)</div>
+                        <div class="reciter-style">Diyanet & Türkiye Hafızlık Standardı • 15 Satır Âyet-Berkenar</div>
+                        <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Ayetlerin sayfada tam bittiği, Türkiye'deki tüm Kur'an kursları ve Diyanet hafızlıklarında esas alınan resmi mizanpaj.</div>
                     </div>
-                    <!-- Hat 2: Ahmed Hüsrev -->
-                    <div class="reciter-card" data-font="ahmed-husrev">
-                        <div class="reciter-name"><i class="fa-solid fa-feather"></i> Hattat Ahmed Hüsrev Altınbaşak (Hayrât)</div>
-                        <div class="reciter-style">Tevâfuklu Hat • İri, Dolgun ve Son Derece Okunaklı</div>
-                        <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Gözü yormayan, harf mahreçleri açık, ezberi çok kolaylaştıran Türk hattı.</div>
+                    <!-- Hat 2: Diyanet Dijital -->
+                    <div class="reciter-card" data-font="diyanet-digital">
+                        <div class="reciter-name"><i class="fa-solid fa-desktop"></i> Diyanet Dijital Bilgisayar Hattı</div>
+                        <div class="reciter-style">Diyanet İşleri Başkanlığı Resmi Dijital Ekran Neshi</div>
+                        <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Dijital ekranlarda piksel netliğinde okuma sunan modern ve yüksek kontrastlı tertip.</div>
                     </div>
                     <!-- Hat 3: Hasan Rıza -->
                     <div class="reciter-card" data-font="hasan-riza">
@@ -804,17 +805,17 @@
                         <div class="reciter-style">Klasik Osmanlı Neshi • Diyanet & Kültür Bakanlığı Tıpkıbasımı</div>
                         <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Hat sanatının zirvesi kabul edilen ince ve vakur Osmanlı ketebe neshi.</div>
                     </div>
-                    <!-- Hat 4: Osman Taha -->
+                    <!-- Hat 4: Ahmed Hüsrev -->
+                    <div class="reciter-card" data-font="ahmed-husrev">
+                        <div class="reciter-name"><i class="fa-solid fa-feather"></i> Hattat Ahmed Hüsrev Altınbaşak (Hayrât)</div>
+                        <div class="reciter-style">Tevâfuklu Hat • İri, Dolgun ve Son Derece Okunaklı</div>
+                        <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Gözü yormayan, harf mahreçleri açık, ezberi çok kolaylaştıran Türk hattı.</div>
+                    </div>
+                    <!-- Hat 5: Osman Taha -->
                     <div class="reciter-card" data-font="osman-taha">
                         <div class="reciter-name"><i class="fa-solid fa-kaaba"></i> Hattat Osman Taha (Medine Mushafı)</div>
                         <div class="reciter-style">Uluslararası Standart • Medine-i Münevvere Baskısı (Hafs)</div>
                         <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Tüm İslam dünyasında en yaygın basılan 20 sayfalık Medine tertibi.</div>
-                    </div>
-                    <!-- Hat 5: Diyanet Dijital -->
-                    <div class="reciter-card" data-font="diyanet-digital">
-                        <div class="reciter-name"><i class="fa-solid fa-desktop"></i> Diyanet Dijital Bilgisayar Hattı</div>
-                        <div class="reciter-style">Modern & Yüksek Kontrastlı Ekran Neshi</div>
-                        <div style="font-size:0.72rem; color:var(--text-dim); margin-top:4px;">Dijital ekranlarda piksel netliğinde okuma sunan modern tertip.</div>
                     </div>
                 </div>
             </div>
