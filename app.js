@@ -546,20 +546,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (spinner) spinner.style.display = 'none';
                 return;
             }
-
             try {
-                // Mushaf 1 = PDF 2 (Fâtiha)
-                // Mushaf 2 = PDF 3 (Bakara başı)
-                // Mushaf p (p >= 3) = PDF p + 2 (Sayfa 474 = PDF 476, Sayfa 604 = PDF 606)
-                let pdfPageNum = 2;
-                if (pageNumber === 1) {
-                    pdfPageNum = 2;
-                } else if (pageNumber === 2) {
-                    pdfPageNum = 3;
-                } else {
-                    pdfPageNum = pageNumber + 2;
-                }
-                pdfPageNum = Math.min(Math.max(pdfPageNum, 1), doc.numPages);
+                // Diyanet PDF Eşleşmesi:
+                // PDF 1: Kapak
+                // PDF 2: Fâtiha (Mushaf Sayfa 1)
+                // PDF 3: Bakara 1-5 / Elif-Lâm-Mîm (Mushaf Sayfa 2)
+                // PDF 4: Bakara 6-16 (Mushaf Sayfa 3)
+                // PDF 475: Mü'min / Gâfir 59-66 (Mushaf Sayfa 474)
+                // PDF 605: İhlâs, Felak, Nâs (Mushaf Sayfa 604)
+                // Formül: Mushaf Sayfa p -> PDF Sayfa p + 1
+                const pdfPageNum = Math.min(Math.max(1, pageNumber + 1), doc.numPages);
                 const page = await doc.getPage(pdfPageNum);
 
                 const scale = window.devicePixelRatio && window.devicePixelRatio > 1.5 ? 2.0 : 1.7;
