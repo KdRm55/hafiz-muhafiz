@@ -4,47 +4,48 @@
    ========================================================================== */
 
 :root {
-    /* Renk Paleti (Varsayılan Koyu Gece Zümrütü) */
-    --bg-deep: #040d09;
-    --bg-surface: #081a13;
-    --bg-card: rgba(10, 28, 20, 0.85);
-    --bg-card-hover: rgba(16, 42, 30, 0.95);
-    --bg-glass: rgba(8, 24, 17, 0.75);
+    /* Renk Paleti (Canlı, Parlak ve Yüksek Kontrastlı) */
+    --bg-deep: #06150f;
+    --bg-surface: #0a2419;
+    --bg-card: rgba(14, 38, 27, 0.95);
+    --bg-card-hover: rgba(20, 52, 38, 0.98);
+    --bg-glass: rgba(10, 30, 22, 0.92);
 
     /* Mushaf Kağıt Temaları */
-    --sheet-bg: #0b1f17;
-    --sheet-border: #d4af37;
-    --sheet-inner-border: rgba(212, 175, 55, 0.35);
-    --sheet-text: #f8f6f0;
-    --sheet-ayah-hover: rgba(212, 175, 55, 0.15);
-    --sheet-ayah-active: rgba(212, 175, 55, 0.32);
-    --sheet-ayah-active-border: #f5cf6d;
+    --sheet-bg: #0d261b;
+    --sheet-border: #facc15;
+    --sheet-inner-border: rgba(250, 204, 21, 0.45);
+    --sheet-text: #ffffff;
+    --sheet-ayah-hover: rgba(250, 204, 21, 0.22);
+    --sheet-ayah-active: rgba(250, 204, 21, 0.42);
+    --sheet-ayah-active-border: #fef08a;
 
-    --gold-primary: #d4af37;
-    --gold-bright: #f5cf6d;
-    --gold-dark: #aa841c;
-    --gold-glow: rgba(212, 175, 55, 0.35);
-    --gold-subtle: rgba(212, 175, 55, 0.12);
+    --gold-primary: #eab308;
+    --gold-bright: #fde047;
+    --gold-dark: #ca8a04;
+    --gold-glow: rgba(250, 204, 21, 0.45);
+    --gold-subtle: rgba(250, 204, 21, 0.18);
 
-    --emerald-primary: #10b981;
-    --emerald-glow: rgba(16, 185, 129, 0.35);
+    --emerald-primary: #34d399;
+    --emerald-bright: #6ee7b7;
+    --emerald-glow: rgba(52, 211, 153, 0.45);
     --emerald-dark: #064e3b;
 
-    --text-main: #f8f6f0;
-    --text-muted: #b8c5be;
-    --text-gold: #f3e5ab;
-    --text-dim: #71877d;
+    --text-main: #ffffff;
+    --text-muted: #e2e8f0;
+    --text-gold: #fef08a;
+    --text-dim: #cbd5e1;
 
-    --border-subtle: rgba(212, 175, 55, 0.16);
-    --border-gold: rgba(212, 175, 55, 0.35);
-    --border-active: rgba(245, 207, 109, 0.55);
+    --border-subtle: rgba(250, 204, 21, 0.25);
+    --border-gold: rgba(250, 204, 21, 0.5);
+    --border-active: rgba(254, 240, 138, 0.8);
 
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 18px;
     --radius-full: 9999px;
 
-    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.45);
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.55);
     --shadow-glow: 0 0 25px var(--gold-glow);
     --shadow-emerald: 0 0 20px var(--emerald-glow);
 
@@ -1294,63 +1295,58 @@ body {
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(4, 14, 10, 0.95);
+    background: rgba(8, 26, 18, 0.98);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border-active);
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
-    padding: 10px 24px;
+    border-top: 1px solid var(--border-gold);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+    padding: 12px 24px;
 }
 
 .deck-inner {
     max-width: 1400px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 260px 1fr 320px;
+    display: flex;
     align-items: center;
-    gap: 16px;
+    justify-content: space-between;
+    gap: 20px;
 }
 
 .deck-left-info {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.current-reciter-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, #1d4d38 0%, #0d271c 100%);
-    border: 1px solid var(--gold-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gold-bright);
-    font-size: 1.1rem;
-    flex-shrink: 0;
-    cursor: pointer;
+    gap: 14px;
+    flex: 0 1 380px;
+    min-width: 280px;
 }
 
 .track-meta {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    flex: 1;
     overflow: hidden;
 }
 
 .track-title {
     font-family: var(--font-heading);
-    font-size: 0.92rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: #ffffff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 .track-sub {
-    font-size: 0.75rem;
+    font-size: 0.80rem;
+    font-weight: 600;
     color: var(--gold-bright);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 .deck-center-controls {
@@ -2270,19 +2266,34 @@ kbd {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(14, 38, 28, 0.75);
+    background: rgba(14, 44, 32, 0.9);
     border: 1px solid var(--border-gold);
     border-radius: var(--radius-md);
     padding: 6px 12px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    flex-shrink: 0;
+}
+
+.current-reciter-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #2d7a58 0%, #13422e 100%);
+    border: 1.5px solid var(--gold-bright);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-bright);
+    font-size: 1.05rem;
+    flex-shrink: 0;
 }
 
 .deck-reciter-btn:hover {
-    background: rgba(212, 175, 55, 0.18);
+    background: rgba(250, 204, 21, 0.2);
     border-color: var(--gold-bright);
-    box-shadow: 0 0 14px var(--gold-glow);
+    box-shadow: 0 0 16px var(--gold-glow);
     transform: translateY(-1px);
 }
 
@@ -2292,16 +2303,16 @@ kbd {
 }
 
 .reciter-tag {
-    font-size: 0.60rem;
+    font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.5px;
     color: var(--gold-bright);
 }
 
 .reciter-curr-name {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffffff;
     white-space: nowrap;
 }
 

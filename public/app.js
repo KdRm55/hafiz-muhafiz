@@ -243,6 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showDashboard() {
         if (viewDashboard) viewDashboard.style.display = 'block';
         if (viewWorkspace) viewWorkspace.style.display = 'none';
+        const audioDeck = document.querySelector('.audio-deck');
+        if (audioDeck) audioDeck.style.display = 'none';
         updateDashboardInfo();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -250,6 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showWorkspace(mode = 'ham', openStrategy = false) {
         if (viewDashboard) viewDashboard.style.display = 'none';
         if (viewWorkspace) viewWorkspace.style.display = 'block';
+        const audioDeck = document.querySelector('.audio-deck');
+        if (audioDeck) audioDeck.style.display = 'block';
 
         if (mode === 'has' || mode === 'chain-has') {
             setMode('chain-has');
