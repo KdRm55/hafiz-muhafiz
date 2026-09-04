@@ -1,0 +1,26 @@
+{
+  "name": "hafiz-muhafiz",
+  "version": "1.0.0",
+  "description": "Hafız Muhafız — Osmanlı ve Türk Usulü Hafızlık & Dinleme Asistanı",
+  "main": "index.html",
+  "scripts": {
+    "cap:add": "cap add android",
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android"
+  },
+  "keywords": [
+    "hafiz",
+    "quran",
+    "mushaf",
+    "tajweed",
+    "android",
+    "apk"
+  ],
+  "author": "Hafız Muhafız",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}
