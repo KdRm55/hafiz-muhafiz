@@ -547,21 +547,11 @@
                                     <!-- 4. Katman: Hafızlık Ezber / Perdeleme Maskesi (Örtü) -->
                                     <div id="mushaf-mask-overlay" class="mushaf-mask-layer" style="display:none;"></div>
 
-                                    <!-- 5. Katman: Canlı Satır Altı Ses Takip İbresi (Zarif Alt Çizgi + Yukarı Ok) -->
-                                    <div id="mushaf-audio-pointer" class="mushaf-audio-bottom-tracker" style="display:none;">
-                                        <div class="bottom-tracker-bar"></div>
-                                        <div class="bottom-tracker-arrow">
-                                            <svg viewBox="0 0 20 12" class="tracker-arrow-svg">
-                                                <defs>
-                                                    <linearGradient id="goldGradUp" x1="0%" y1="100%" x2="0%" y2="0%">
-                                                        <stop offset="0%" stop-color="#d4af37" />
-                                                        <stop offset="50%" stop-color="#ffd700" />
-                                                        <stop offset="100%" stop-color="#fff9cc" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <polygon points="10,0 20,12 0,12" fill="url(#goldGradUp)" stroke="#ffffff" stroke-width="0.75"/>
-                                            </svg>
-                                        </div>
+                                    <!-- 5. Katman: Canlı Mukabele Takip Üçgeni (YouTube Mukabele Tarzı Yeşil İbre) -->
+                                    <div id="mushaf-audio-pointer" class="mukabele-tracker-triangle" style="display:none;">
+                                        <svg viewBox="0 0 24 30" class="mukabele-triangle-svg">
+                                            <polygon points="12,0 24,30 0,30" fill="rgba(92, 184, 92, 0.65)" stroke="rgba(40, 140, 40, 0.85)" stroke-width="1"/>
+                                        </svg>
                                     </div>
                                 </div>
 

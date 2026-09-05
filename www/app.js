@@ -777,9 +777,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Canlı Satır Altı Takip İbresini (Alt Çizgi + Yukarı Ok) Okunan Satırın Altına Akıcı Şekilde Konumlandırır
+     * YouTube Mukabele Tarzı Canlı Yeşil Takip Üçgenini Okunan Kelime/Satır Altına Akıcı Şekilde Konumlandırır
      */
-    function updateAudioTrackerPointer(lineIndex, isVisible = true) {
+    function updateMukabeleTracker(ayahIndex, progress = 0, isVisible = true) {
         const pointer = mushafAudioPointer || document.getElementById('mushaf-audio-pointer');
         if (!pointer) return;
         if (!isVisible) {
@@ -787,24 +787,40 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         pointer.style.display = 'flex';
+
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
-        const frame = framePageRight || document.getElementById('frame-page-right');
-        if (overlay && frame) {
-            const lines = overlay.querySelectorAll('.ayah-overlay-line');
-            if (lines && lines.length > 0) {
-                const clampedIdx = Math.max(0, Math.min(lines.length - 1, lineIndex));
-                const targetLine = lines[clampedIdx];
-                if (targetLine) {
-                    const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 14;
-                    pointer.style.transform = `translateY(${topOffset}px)`;
-                    return;
-                }
+        if (!overlay) return;
+
+        const matchingLines = overlay.querySelectorAll(`.ayah-overlay-line[data-ayah-index="${ayahIndex}"]`);
+        if (matchingLines && matchingLines.length > 0) {
+            const totalLines = matchingLines.length;
+            const clampedProgress = Math.max(0, Math.min(0.999, progress));
+            const subLineIdx = Math.floor(clampedProgress * totalLines);
+            const subProgress = (clampedProgress * totalLines) - subLineIdx;
+            const targetLine = matchingLines[subLineIdx];
+
+            if (targetLine) {
+                // Arapça sağdan sola okunduğu için: subProgress 0 iken sağda (%6), 1 iken solda (%88)
+                const rightPct = 6 + (subProgress * 82);
+                const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 8;
+                pointer.style.transform = `translateY(${topOffset}px)`;
+                pointer.style.right = `${rightPct}%`;
+                return;
             }
         }
-        const frameHeight = frame ? frame.clientHeight : 700;
-        const lineH = frameHeight / 15;
-        const topOffset = ((Math.max(0, Math.min(14, lineIndex)) + 1) * lineH) - 14;
-        pointer.style.transform = `translateY(${topOffset}px)`;
+
+        // Fallback: Satır dizilimine göre
+        const allLines = overlay.querySelectorAll('.ayah-overlay-line');
+        if (allLines && allLines.length > 0) {
+            const clampedIdx = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
+            const targetLine = allLines[clampedIdx];
+            if (targetLine) {
+                const rightPct = 6 + (progress * 82);
+                const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 8;
+                pointer.style.transform = `translateY(${topOffset}px)`;
+                pointer.style.right = `${rightPct}%`;
+            }
+        }
     }
 
     function toggleSpreadMode() {
@@ -830,26 +846,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function highlightActiveAyah(index) {
-        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
-        let activeLineIdx = 0;
-        if (overlay) {
-            const lines = overlay.querySelectorAll('.ayah-overlay-line');
-            let found = false;
-            lines.forEach(line => {
-                const aIdx = parseInt(line.dataset.ayahIndex, 10);
-                const isActive = (aIdx === index);
-                line.classList.toggle('active-reading', isActive);
-                if (isActive && !found) {
-                    activeLineIdx = parseInt(line.dataset.lineIndex, 10) || 0;
-                    found = true;
-                }
-            });
-            updateAudioTrackerPointer(activeLineIdx, true);
-        }
-
         if (state.pageAyahs && state.pageAyahs[index]) {
             updateActiveAyahBanner(state.pageAyahs[index]);
         }
+        updateMukabeleTracker(index, 0, true);
 
         // Ezber maskesi aktifse çalan ayeti otomatik aç
         if (state.isHafizMaskActive) {
@@ -1153,7 +1153,12 @@ document.addEventListener('DOMContentLoaded', () => {
             timeCurrent.textContent = formatTime(current);
             timeDuration.textContent = formatTime(duration);
             const pct = duration > 0 ? (current / duration) * 100 : 0;
-            progressFill.style.width = `${pct}%`;
+            if (progressFill) progressFill.style.width = (pct) + '%';
+            if (window.audioEngine && window.audioEngine.isPlaying) {
+                const curIdx = window.audioEngine.currentAyahIndex || 0;
+                const progress = duration > 0 ? (current / duration) : 0;
+                updateMukabeleTracker(curIdx, progress, true);
+            }
         };
 
         window.audioEngine.onGapCountdown = (seconds) => {
