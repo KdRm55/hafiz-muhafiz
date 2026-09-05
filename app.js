@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         lesson: null,
         pageAyahs: [],
+        pageLayoutCache: {},
         cache: {}
     };
 
@@ -612,6 +613,11 @@ document.addEventListener('DOMContentLoaded', () => {
             renderAyahsView(dbAyahs);
             renderDrawerAyahs(dbAyahs);
             setupAudioQueue();
+            fetchPageWordsLayout(pageNumber).then(apiVerses => {
+                if (apiVerses && state.currentPage === pageNumber) {
+                    buildDiyanetInteractiveOverlay(state.pageAyahs, apiVerses);
+                }
+            });
             return;
         }
 
@@ -626,6 +632,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderAyahsView(offlineAyahs);
                     renderDrawerAyahs(offlineAyahs);
                     setupAudioQueue();
+                    fetchPageWordsLayout(pageNumber).then(apiVerses => {
+                        if (apiVerses && state.currentPage === pageNumber) {
+                            buildDiyanetInteractiveOverlay(state.pageAyahs, apiVerses);
+                        }
+                    });
                     return;
                 }
             } catch (err) {
@@ -670,6 +681,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderAyahsView(ayahs);
                 renderDrawerAyahs(ayahs);
                 setupAudioQueue();
+                fetchPageWordsLayout(pageNumber).then(apiVerses => {
+                    if (apiVerses && state.currentPage === pageNumber) {
+                        buildDiyanetInteractiveOverlay(state.pageAyahs, apiVerses);
+                    }
+                });
                 return;
             }
         } catch (error) {
@@ -702,10 +718,27 @@ document.addEventListener('DOMContentLoaded', () => {
         setupAudioQueue();
     }
 
+    async function fetchPageWordsLayout(pageNumber) {
+        if (state.pageLayoutCache[pageNumber]) return state.pageLayoutCache[pageNumber];
+        try {
+            const url = `https://api.quran.com/api/v4/verses/by_page/${pageNumber}?words=true&word_fields=line_number,position,text_uthmani`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (data && data.verses) {
+                state.pageLayoutCache[pageNumber] = data.verses;
+                return data.verses;
+            }
+        } catch (e) {
+            console.warn(`[PageLayout] Sayfa ${pageNumber} düzeni alınamadı:`, e);
+        }
+        return null;
+    }
+
     /**
      * Diyanet 15-Satır Orijinal Mushafı Üzerinde İnteraktif Katmanı İnşa Eder
      */
-    function buildDiyanetInteractiveOverlay(ayahs) {
+    function buildDiyanetInteractiveOverlay(ayahs, apiVerses = null) {
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
         if (!overlay) return;
         overlay.innerHTML = '';
@@ -716,83 +749,153 @@ document.addEventListener('DOMContentLoaded', () => {
             mushafSurahTitle.textContent = ayahs[0].surahNameAr ? `سُورَةُ ${ayahs[0].surahNameAr} (${ayahs[0].surahNameTr})` : `${ayahs[0].surahNameTr} Suresi`;
         }
 
-        // 15 satırlık Diyanet standardı satır dağılımı ve her ayetin satır parçaları
         const totalLines = 15;
-        const totalChars = ayahs.reduce((sum, a) => sum + (a.textArabic ? a.textArabic.length : 1), 0);
-        const charsPerLine = Math.max(1, totalChars / totalLines);
-
-        let charOffset = 0;
         state.ayahSpans = {};
         state.ayahWordsMap = {};
 
-        ayahs.forEach((ayah, aIdx) => {
-            const charLen = ayah.textArabic ? ayah.textArabic.length : 1;
-            const startChar = charOffset;
-            const endChar = charOffset + charLen;
-            charOffset = endChar;
+        if (apiVerses && Array.isArray(apiVerses) && apiVerses.length > 0) {
+            // 1. KUR'AN-I KERİM RESMİ BASKI 15 SATIR HASSAS KELİME DÜZENİ (Milisaniyelik Tam Eşleme)
+            const wordsByLine = {};
+            for (let l = 0; l < totalLines; l++) wordsByLine[l] = [];
 
-            const startLine = Math.min(totalLines - 1, Math.floor(startChar / charsPerLine));
-            const endLine = Math.min(totalLines - 1, Math.floor(Math.max(startChar, endChar - 1) / charsPerLine));
+            apiVerses.forEach((v, vIdx) => {
+                const aIdx = vIdx;
+                (v.words || []).forEach((w, wIdx) => {
+                    const rawLine = w.line_number || 1;
+                    const lineIdx = Math.max(0, Math.min(totalLines - 1, rawLine - 1));
+                    const txt = (w.text_uthmani || w.text || ' ').trim();
+                    const len = Math.max(2, txt.length);
+                    wordsByLine[lineIdx].push({
+                        ayahIndex: aIdx,
+                        wordIndex: wIdx,
+                        text: txt,
+                        len: len,
+                        isEnd: w.char_type_name === 'end'
+                    });
+                });
+            });
 
-            const spans = [];
-            for (let l = startLine; l <= endLine; l++) {
-                const lineStartChar = l * charsPerLine;
-                const lineEndChar = (l + 1) * charsPerLine;
+            // Her satırın kelimelerini sağdan sola (0.0 -> 1.0) tam satır genişliğine ölçekle
+            for (let l = 0; l < totalLines; l++) {
+                const lineWords = wordsByLine[l];
+                if (!lineWords || lineWords.length === 0) continue;
 
-                const segStart = Math.max(startChar, lineStartChar);
-                const segEnd = Math.min(endChar, lineEndChar);
-                const segLen = Math.max(1, segEnd - segStart);
+                const lineTotalLen = lineWords.reduce((sum, w) => sum + w.len, 0);
+                let currentPos = 0;
 
-                // Satır içindeki ilerleme oranı: 0.0 (satırın en sağı / Arapça başı) -> 1.0 (satırın en solu / Arapça sonu)
-                const startRatio = Math.max(0, Math.min(1, (segStart - lineStartChar) / charsPerLine));
-                const endRatio = Math.max(0, Math.min(1, (segEnd - lineStartChar) / charsPerLine));
+                lineWords.forEach((item) => {
+                    const startRatio = currentPos / lineTotalLen;
+                    const endRatio = (currentPos + item.len) / lineTotalLen;
+                    const centerRatio = (startRatio + endRatio) / 2;
+                    currentPos += item.len;
 
-                spans.push({
-                    lineIndex: l,
-                    startRatio: startRatio,
-                    endRatio: endRatio,
-                    weight: segLen / charLen
+                    if (!state.ayahWordsMap[item.ayahIndex]) {
+                        state.ayahWordsMap[item.ayahIndex] = [];
+                    }
+
+                    state.ayahWordsMap[item.ayahIndex][item.wordIndex] = {
+                        wordIndex: item.wordIndex,
+                        lineIndex: l,
+                        ratio: centerRatio,
+                        startRatio: startRatio,
+                        endRatio: endRatio,
+                        wordText: item.text
+                    };
                 });
             }
 
-            state.ayahSpans[aIdx] = spans.length > 0 ? spans : [{
-                lineIndex: startLine,
-                startRatio: 0,
-                endRatio: 1,
-                weight: 1
-            }];
-
-            // Kelime bazlı milisaniye koordinat haritası (Quran.com API Senkronizasyonu İçin)
-            const rawWords = (ayah.textArabic || '').trim().split(/\s+/).filter(w => w.length > 0);
-            const wordEntries = [];
-            let wCharPos = startChar;
-
-            rawWords.forEach((wordText, wIdx) => {
-                const wLen = wordText.length;
-                const wStart = wCharPos;
-                const wEnd = wCharPos + wLen;
-                const wCenter = wStart + (wLen / 2);
-                const wLine = Math.min(totalLines - 1, Math.floor(wCenter / charsPerLine));
-                const lineStartChar = wLine * charsPerLine;
-
-                const startRatio = Math.max(0, Math.min(1, (wStart - lineStartChar) / charsPerLine));
-                const endRatio = Math.max(0, Math.min(1, (wEnd - lineStartChar) / charsPerLine));
-                const centerRatio = Math.max(0, Math.min(1, (wCenter - lineStartChar) / charsPerLine));
-
-                wordEntries.push({
-                    wordIndex: wIdx,
-                    lineIndex: wLine,
-                    ratio: centerRatio,
-                    startRatio: startRatio,
-                    endRatio: endRatio,
-                    wordText: wordText
+            // Ayetlerin satır kapsama ağırlıklarını (spans) hesapla
+            ayahs.forEach((_, aIdx) => {
+                const wMap = state.ayahWordsMap[aIdx] || [];
+                const linesFound = [...new Set(wMap.filter(Boolean).map(w => w.lineIndex))];
+                const totalWordsInAyah = wMap.filter(Boolean).length || 1;
+                const spans = linesFound.map(lineIdx => {
+                    const lineWordsForAyah = wMap.filter(w => w && w.lineIndex === lineIdx);
+                    const minStart = Math.min(...lineWordsForAyah.map(w => w.startRatio));
+                    const maxEnd = Math.max(...lineWordsForAyah.map(w => w.endRatio));
+                    return {
+                        lineIndex: lineIdx,
+                        startRatio: minStart,
+                        endRatio: maxEnd,
+                        weight: lineWordsForAyah.length / totalWordsInAyah
+                    };
                 });
-
-                wCharPos += wLen + 1;
+                state.ayahSpans[aIdx] = spans.length > 0 ? spans : [{ lineIndex: 0, startRatio: 0, endRatio: 1, weight: 1 }];
             });
 
-            state.ayahWordsMap[aIdx] = wordEntries;
-        });
+        } else {
+            // 2. YEDEK: Matematiksel Dağılım
+            const totalChars = ayahs.reduce((sum, a) => sum + (a.textArabic ? a.textArabic.length : 1), 0);
+            const charsPerLine = Math.max(1, totalChars / totalLines);
+            let charOffset = 0;
+
+            ayahs.forEach((ayah, aIdx) => {
+                const charLen = ayah.textArabic ? ayah.textArabic.length : 1;
+                const startChar = charOffset;
+                const endChar = charOffset + charLen;
+                charOffset = endChar;
+
+                const startLine = Math.min(totalLines - 1, Math.floor(startChar / charsPerLine));
+                const endLine = Math.min(totalLines - 1, Math.floor(Math.max(startChar, endChar - 1) / charsPerLine));
+
+                const spans = [];
+                for (let l = startLine; l <= endLine; l++) {
+                    const lineStartChar = l * charsPerLine;
+                    const lineEndChar = (l + 1) * charsPerLine;
+
+                    const segStart = Math.max(startChar, lineStartChar);
+                    const segEnd = Math.min(endChar, lineEndChar);
+                    const segLen = Math.max(1, segEnd - segStart);
+
+                    const startRatio = Math.max(0, Math.min(1, (segStart - lineStartChar) / charsPerLine));
+                    const endRatio = Math.max(0, Math.min(1, (segEnd - lineStartChar) / charsPerLine));
+
+                    spans.push({
+                        lineIndex: l,
+                        startRatio: startRatio,
+                        endRatio: endRatio,
+                        weight: segLen / charLen
+                    });
+                }
+
+                state.ayahSpans[aIdx] = spans.length > 0 ? spans : [{
+                    lineIndex: startLine,
+                    startRatio: 0,
+                    endRatio: 1,
+                    weight: 1
+                }];
+
+                const rawWords = (ayah.textArabic || '').trim().split(/\s+/).filter(w => w.length > 0);
+                const wordEntries = [];
+                let wCharPos = startChar;
+
+                rawWords.forEach((wordText, wIdx) => {
+                    const wLen = wordText.length;
+                    const wStart = wCharPos;
+                    const wEnd = wCharPos + wLen;
+                    const wCenter = wStart + (wLen / 2);
+                    const wLine = Math.min(totalLines - 1, Math.floor(wCenter / charsPerLine));
+                    const lineStartChar = wLine * charsPerLine;
+
+                    const startRatio = Math.max(0, Math.min(1, (wStart - lineStartChar) / charsPerLine));
+                    const endRatio = Math.max(0, Math.min(1, (wEnd - lineStartChar) / charsPerLine));
+                    const centerRatio = Math.max(0, Math.min(1, (wCenter - lineStartChar) / charsPerLine));
+
+                    wordEntries.push({
+                        wordIndex: wIdx,
+                        lineIndex: wLine,
+                        ratio: centerRatio,
+                        startRatio: startRatio,
+                        endRatio: endRatio,
+                        wordText: wordText
+                    });
+
+                    wCharPos += wLen + 1;
+                });
+
+                state.ayahWordsMap[aIdx] = wordEntries;
+            });
+        }
 
         // 15 satırlık overlay çizgilerini oluştur
         for (let i = 0; i < totalLines; i++) {

@@ -296,12 +296,14 @@ class AudioEngine {
                         wordNum = idx + 1;
                     }
 
+                    const wordIdx = (wordNum !== undefined && wordNum > 0) ? (wordNum - 1) : idx;
+
                     return {
-                        wordIndex: idx,
+                        wordIndex: wordIdx,
                         wordNum: wordNum,
-                        // Kelimenin ilk harfinin (mahrecinin) kesilmemesi için 40ms ön pay
-                        start: Math.max(0, (startMs / 1000) - 0.04),
-                        end: (endMs / 1000) + 0.05
+                        // Kelimenin ilk harfinin (mahrecinin) kesilmemesi için 30ms ön pay
+                        start: Math.max(0, (startMs / 1000) - 0.03),
+                        end: (endMs / 1000) + 0.03
                     };
                 });
 
