@@ -757,6 +757,31 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.appendChild(lineEl);
         }
 
+        // Her ayetin hangi satırlara dağıldığını ve satır paylarını hesapla
+        state.ayahSpans = {};
+        for (let aIdx = 0; aIdx < ayahs.length; aIdx++) {
+            const lineIndices = [];
+            for (let l = 0; l < totalLines; l++) {
+                if (lineAyahMap[l] === aIdx) lineIndices.push(l);
+            }
+            if (lineIndices.length > 0) {
+                const total = lineIndices.length;
+                state.ayahSpans[aIdx] = lineIndices.map((lIdx) => ({
+                    lineIndex: lIdx,
+                    startPct: 6,
+                    endPct: 86,
+                    weight: 1 / total
+                }));
+            } else {
+                state.ayahSpans[aIdx] = [{
+                    lineIndex: 0,
+                    startPct: 6,
+                    endPct: 86,
+                    weight: 1
+                }];
+            }
+        }
+
         // İlk ayet ile aktif banner, ses takipçisi ve grup seçicileri güncelle
         const curIdx = window.audioEngine ? (window.audioEngine.currentAyahIndex || 0) : 0;
         if (ayahs[curIdx]) {
@@ -776,6 +801,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeAyahMeal) activeAyahMeal.textContent = ayah.translationTr || 'Diyanet Meali yüklenemedi.';
     }
 
+    let lastTrackedLineIndex = -1;
+
     /**
      * YouTube Mukabele Tarzı Canlı Yeşil Takip Üçgenini Okunan Kelime/Satır Altına Akıcı Şekilde Konumlandırır
      */
@@ -791,35 +818,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
         if (!overlay) return;
 
-        const matchingLines = overlay.querySelectorAll(`.ayah-overlay-line[data-ayah-index="${ayahIndex}"]`);
-        if (matchingLines && matchingLines.length > 0) {
-            const totalLines = matchingLines.length;
-            const clampedProgress = Math.max(0, Math.min(0.999, progress));
-            const subLineIdx = Math.floor(clampedProgress * totalLines);
-            const subProgress = (clampedProgress * totalLines) - subLineIdx;
-            const targetLine = matchingLines[subLineIdx];
+        const subSpans = (state.ayahSpans && state.ayahSpans[ayahIndex]) || [];
+        let activeLineIndex = 0;
+        let rightPct = 6;
 
-            if (targetLine) {
-                // Arapça sağdan sola okunduğu için: subProgress 0 iken sağda (%6), 1 iken solda (%88)
-                const rightPct = 6 + (subProgress * 82);
-                const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 8;
-                pointer.style.transform = `translateY(${topOffset}px)`;
-                pointer.style.right = `${rightPct}%`;
-                return;
+        if (subSpans.length > 0) {
+            const clampedProgress = Math.max(0, Math.min(0.999, progress));
+            let cumWeight = 0;
+            let activeSpan = subSpans[0];
+            let spanProgress = 0;
+
+            for (let s = 0; s < subSpans.length; s++) {
+                const span = subSpans[s];
+                const nextCum = cumWeight + span.weight;
+                if (clampedProgress <= nextCum || s === subSpans.length - 1) {
+                    activeSpan = span;
+                    const spanRange = span.weight > 0 ? span.weight : (1 / subSpans.length);
+                    spanProgress = Math.max(0, Math.min(1, (clampedProgress - cumWeight) / spanRange));
+                    break;
+                }
+                cumWeight = nextCum;
             }
+
+            activeLineIndex = activeSpan.lineIndex;
+            rightPct = activeSpan.startPct + (spanProgress * (activeSpan.endPct - activeSpan.startPct));
+        } else {
+            const allLines = overlay.querySelectorAll('.ayah-overlay-line');
+            activeLineIndex = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
+            rightPct = 6 + (progress * 80);
         }
 
-        // Fallback: Satır dizilimine göre
-        const allLines = overlay.querySelectorAll('.ayah-overlay-line');
-        if (allLines && allLines.length > 0) {
-            const clampedIdx = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
-            const targetLine = allLines[clampedIdx];
-            if (targetLine) {
-                const rightPct = 6 + (progress * 82);
-                const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 8;
-                pointer.style.transform = `translateY(${topOffset}px)`;
-                pointer.style.right = `${rightPct}%`;
+        const targetLine = overlay.querySelector(`.ayah-overlay-line[data-line-index="${activeLineIndex}"]`);
+        if (targetLine) {
+            const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 6;
+
+            if (lastTrackedLineIndex !== -1 && lastTrackedLineIndex !== activeLineIndex) {
+                pointer.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.25, 1)';
+            } else {
+                pointer.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.25, 1), right 0.08s linear';
             }
+            lastTrackedLineIndex = activeLineIndex;
+
+            pointer.style.transform = `translateY(${topOffset}px)`;
+            pointer.style.right = `${rightPct}%`;
         }
     }
 
