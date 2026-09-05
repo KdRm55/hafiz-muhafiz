@@ -3,7 +3,7 @@
  * Tüm arayüzü ve Kur'an sayfalarını çevrimdışı hızlı yükleme için önbelleğe alır.
  */
 
-const CACHE_VERSION = 'hafiz-muhafiz-v1';
+const CACHE_VERSION = 'hafiz-muhafiz-v20';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 const AUDIO_CACHE = `audio-${CACHE_VERSION}`;

@@ -556,27 +556,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (img) {
             img.style.display = 'block';
-            if (spinner) {
-                if (spinnerText) spinnerText.textContent = 'Mushaf sayfası hazırlanıyor...';
-                spinner.style.display = 'flex';
-            }
-            img.style.opacity = '0.4';
-            img.onload = () => {
+            const targetSrc = QURAN_DATA.getPageImageUrl(pageNumber, facType);
+
+            const onPageImageReady = () => {
                 if (spinner) spinner.style.display = 'none';
                 img.style.opacity = '1';
                 if (state.pageAyahs && state.pageAyahs.length > 0) {
                     buildDiyanetInteractiveOverlay(state.pageAyahs);
                 }
             };
+
+            img.onload = onPageImageReady;
             img.onerror = () => {
                 img.src = QURAN_DATA.getFallbackPageImageUrl(pageNumber, facType);
-                if (spinner) spinner.style.display = 'none';
-                img.style.opacity = '1';
-                if (state.pageAyahs && state.pageAyahs.length > 0) {
-                    buildDiyanetInteractiveOverlay(state.pageAyahs);
-                }
+                onPageImageReady();
             };
-            img.src = QURAN_DATA.getPageImageUrl(pageNumber, facType);
+
+            if (img.getAttribute('src') === targetSrc && img.complete && img.naturalWidth > 0) {
+                onPageImageReady();
+            } else {
+                img.src = targetSrc;
+                if (img.complete && img.naturalWidth > 0) {
+                    onPageImageReady();
+                }
+            }
         }
 
         // Rahle / Çift Sayfa (Spread Mode)
