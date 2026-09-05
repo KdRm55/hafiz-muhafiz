@@ -476,8 +476,43 @@
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
 
+                <!-- Yüzen Hızlı Hafızlık Kontrol Kapsülü (Floating Glassmorphism Tool Dock) -->
+                <aside class="mushaf-floating-dock" id="mushaf-floating-dock">
+                    <button id="dock-btn-ruler" class="dock-btn active" title="Hafızlık Okuma Cetveli (Açık/Kapalı)">
+                        <i class="fa-solid fa-ruler-horizontal"></i>
+                        <span class="dock-tooltip">Okuma Cetveli</span>
+                    </button>
+                    <button id="dock-btn-mask" class="dock-btn" title="Ezber Perdesi (Kapat / İpucu / Aç)">
+                        <i class="fa-solid fa-eye-slash"></i>
+                        <span class="dock-tooltip">Ezber Perdesi</span>
+                    </button>
+                    <button id="dock-btn-spread" class="dock-btn" title="Rahle / Çift Sayfa Görünümü">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span class="dock-tooltip">Çift Sayfa (Rahle)</span>
+                    </button>
+                    <div class="dock-divider"></div>
+                    <button id="dock-btn-zoom-in" class="dock-btn" title="Sayfayı Büyüt (+)">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        <span class="dock-tooltip">Yakınlaştır</span>
+                    </button>
+                    <button id="dock-btn-zoom-out" class="dock-btn" title="Sayfayı Küçült (-)">
+                        <i class="fa-solid fa-magnifying-glass-minus"></i>
+                        <span class="dock-tooltip">Uzaklaştır</span>
+                    </button>
+                    <button id="dock-btn-zoom-reset" class="dock-btn" title="Boyutu Sıfırla">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span class="dock-tooltip">Boyutu Sıfırla</span>
+                    </button>
+                    <div class="dock-divider"></div>
+                    <button id="dock-btn-repeat3" class="dock-btn" title="3x Hızlı Ezber Döngüsü">
+                        <i class="fa-solid fa-repeat"></i>
+                        <span class="dock-badge">3x</span>
+                        <span class="dock-tooltip">3x Ezber Tekrarı</span>
+                    </button>
+                </aside>
+
                 <div class="mushaf-book-wrapper" id="mushaf-scale-wrapper">
-                    <div class="mushaf-frame-modern">
+                    <div class="mushaf-frame-modern" id="mushaf-main-frame">
                         <!-- Sayfa Üst Bilgi Başlığı -->
                         <div class="mushaf-page-top-bar">
                             <div class="top-bar-left">
@@ -501,17 +536,36 @@
                                 <span id="facsimile-loader-text">Diyanet resmi Mushaf sayfası hazırlanıyor...</span>
                             </div>
 
-                            <!-- 1. Katman: Diyanet Resmi Vektörel PDF Canvas'ı -->
-                            <canvas id="mushaf-diyanet-canvas" class="mushaf-canvas-layer"></canvas>
+                            <div class="mushaf-spread-wrapper" id="mushaf-spread-wrapper">
+                                <!-- Sağ Sayfa (Ana Sayfa) -->
+                                <div class="mushaf-page-frame" id="frame-page-right">
+                                    <!-- 1. Katman: Diyanet Resmi Vektörel PDF Canvas'ı -->
+                                    <canvas id="mushaf-diyanet-canvas" class="mushaf-canvas-layer"></canvas>
 
-                            <!-- 2. Katman (İsteğe bağlı): Medine & Tecvidli İmaj Öğesi -->
-                            <img id="mushaf-image" class="mushaf-img-fallback" src="" alt="Mushaf Baskısı" style="display:none;">
+                                    <!-- 2. Katman (İsteğe bağlı): Medine & Tecvidli İmaj Öğesi -->
+                                    <img id="mushaf-image" class="mushaf-img-fallback" src="" alt="Mushaf Baskısı" style="display:none;">
 
-                            <!-- 3. Katman: İnteraktif Ayet Vurgu, Tıklama ve Durak Katmanı -->
-                            <div id="mushaf-interactive-overlay" class="mushaf-interactive-layer"></div>
+                                    <!-- 3. Katman: İnteraktif Ayet Vurgu, Tıklama ve Durak Katmanı -->
+                                    <div id="mushaf-interactive-overlay" class="mushaf-interactive-layer"></div>
 
-                            <!-- 4. Katman: Hafızlık Ezber / Perdeleme Maskesi (Örtü) -->
-                            <div id="mushaf-mask-overlay" class="mushaf-mask-layer" style="display:none;"></div>
+                                    <!-- 4. Katman: Hafızlık Ezber / Perdeleme Maskesi (Örtü) -->
+                                    <div id="mushaf-mask-overlay" class="mushaf-mask-layer" style="display:none;"></div>
+
+                                    <!-- 5. Katman: Hafızlık Okuma Cetveli (Focus Reading Ruler) -->
+                                    <div id="mushaf-reading-ruler" class="mushaf-reading-ruler">
+                                        <div class="ruler-line"></div>
+                                        <div class="ruler-indicator"><i class="fa-solid fa-caret-left"></i></div>
+                                    </div>
+                                </div>
+
+                                <!-- Sol Sayfa (Çift Sayfa / Rahle Modunda Gösterilir) -->
+                                <div class="mushaf-page-frame" id="frame-page-left" style="display:none;">
+                                    <canvas id="mushaf-diyanet-canvas-left" class="mushaf-canvas-layer"></canvas>
+                                    <div id="mushaf-interactive-overlay-left" class="mushaf-interactive-layer"></div>
+                                    <div id="mushaf-mask-overlay-left" class="mushaf-mask-layer" style="display:none;"></div>
+                                    <div class="mushaf-left-page-tag" id="mushaf-left-page-tag">Sayfa 475</div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Aktif Okunan Ayet & Diyanet Meali Şeridi (Canlı Alt Bilgi) -->
@@ -532,11 +586,13 @@
 
                 <!-- Ayet Hızlı Eylem Menüsü (Popup Tooltip) -->
                 <div id="ayah-quick-actions" class="ayah-action-popover" style="display: none;">
+                    <div class="popover-arrow"></div>
                     <button class="pop-btn" id="pop-btn-play"><i class="fa-solid fa-play"></i> Dinle</button>
-                    <button class="pop-btn" id="pop-btn-repeat"><i class="fa-solid fa-repeat"></i> 5x Tekrar</button>
+                    <button class="pop-btn" id="pop-btn-repeat"><i class="fa-solid fa-repeat"></i> 3x Tekrar</button>
                     <button class="pop-btn" id="pop-btn-group-start" title="Grup Başlangıcı Yap"><i class="fa-solid fa-link"></i> Grup Başı</button>
                     <button class="pop-btn" id="pop-btn-group-end" title="Grup Sonu Yap"><i class="fa-solid fa-flag-checkered"></i> Grup Sonu</button>
                     <button class="pop-btn" id="pop-btn-slice" title="Ayet Bölücü ile ezberle"><i class="fa-solid fa-scissors"></i> Parçala</button>
+                    <button class="pop-btn" id="pop-btn-toggle-mask" title="Bu Ayetin Perdesini Aç/Kapat"><i class="fa-solid fa-eye"></i> Perde</button>
                     <button class="pop-btn" id="pop-btn-meal"><i class="fa-solid fa-book-open"></i> Meal</button>
                 </div>
             </div>

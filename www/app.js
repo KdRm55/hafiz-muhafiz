@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
         activeView: 'studio', // 'studio' (Diyanet Orijinal Mushafı & İnteraktif), 'ayah' (Ayet Kartları)
         currentPage: 474,
         zoomLevel: 100,       // 80% .. 150%
+        mushafZoom: 1.0,      // Mushaf viewport scale 0.8 .. 1.4
+        isReadingRulerActive: true, // Hafızlık Okuma Cetveli
+        isSpreadMode: false,  // Rahle / Çift Sayfa Görünümü
+        maskMode: 'off',      // 'off', 'full', 'peek'
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
         mushafFont: 'hafiz-osman',
         imlaMode: 'diyanet',   // 'diyanet' (Temiz Türk/Diyanet İmlâsı), 'uthmani'
@@ -111,7 +115,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const mushafImage = document.getElementById('mushaf-image');
     const mushafInteractiveOverlay = document.getElementById('mushaf-interactive-overlay');
     const mushafMaskOverlay = document.getElementById('mushaf-mask-overlay');
+    const mushafReadingRuler = document.getElementById('mushaf-reading-ruler');
     const btnToggleHafizMask = document.getElementById('btn-toggle-hafiz-mask');
+
+    // Floating Tool Dock & Spread Elemanları
+    const mushafFloatingDock = document.getElementById('mushaf-floating-dock');
+    const dockBtnRuler = document.getElementById('dock-btn-ruler');
+    const dockBtnMask = document.getElementById('dock-btn-mask');
+    const dockBtnSpread = document.getElementById('dock-btn-spread');
+    const dockBtnZoomIn = document.getElementById('dock-btn-zoom-in');
+    const dockBtnZoomOut = document.getElementById('dock-btn-zoom-out');
+    const dockBtnZoomReset = document.getElementById('dock-btn-zoom-reset');
+    const dockBtnRepeat3 = document.getElementById('dock-btn-repeat3');
+
+    const framePageRight = document.getElementById('frame-page-right');
+    const framePageLeft = document.getElementById('frame-page-left');
+    const mushafDiyanetCanvasLeft = document.getElementById('mushaf-diyanet-canvas-left');
+    const mushafInteractiveOverlayLeft = document.getElementById('mushaf-interactive-overlay-left');
+    const mushafMaskOverlayLeft = document.getElementById('mushaf-mask-overlay-left');
+    const mushafLeftPageTag = document.getElementById('mushaf-left-page-tag');
 
     const activeAyahBanner = document.getElementById('active-ayah-banner');
     const activeAyahRef = document.getElementById('active-ayah-ref');
@@ -226,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const popBtnGroupStart = document.getElementById('pop-btn-group-start');
     const popBtnGroupEnd = document.getElementById('pop-btn-group-end');
     const popBtnSlice = document.getElementById('pop-btn-slice');
+    const popBtnToggleMask = document.getElementById('pop-btn-toggle-mask');
     const popBtnMeal = document.getElementById('pop-btn-meal');
     let selectedAyahIndexForPopover = 0;
 
@@ -524,6 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const spinner = facsimileLoadingSpinner || document.getElementById('facsimile-loading-spinner');
         const spinnerText = facsimileLoaderText || document.getElementById('facsimile-loader-text');
 
+        // Rahle / Çift Sayfa Görünümü Elemanları
+        const frameLeft = framePageLeft || document.getElementById('frame-page-left');
+        const canvasLeft = mushafDiyanetCanvasLeft || document.getElementById('mushaf-diyanet-canvas-left');
+        const tagLeft = mushafLeftPageTag || document.getElementById('mushaf-left-page-tag');
+
         if (facType === 'diyanet-pdf') {
             if (img) img.style.display = 'none';
             if (canvas) canvas.style.display = 'block';
@@ -565,6 +593,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ctx = canvas.getContext('2d');
                     await page.render({ canvasContext: ctx, viewport }).promise;
                 }
+
+                // Rahle / Çift Sayfa (Spread Mode) Render Mantığı
+                if (state.isSpreadMode && frameLeft && canvasLeft) {
+                    frameLeft.style.display = 'block';
+                    // Çift sayfa: Eğer sağ sayfa tek ise önceki çifti, çift ise sonrakini aç
+                    const leftPageNum = (pageNumber % 2 === 0) ? (pageNumber + 1 <= 604 ? pageNumber + 1 : pageNumber) : pageNumber;
+                    if (tagLeft) tagLeft.textContent = `Sayfa ${leftPageNum}`;
+                    const pdfPageLeftNum = Math.min(Math.max(1, leftPageNum + 1), doc.numPages);
+                    const pageLeft = await doc.getPage(pdfPageLeftNum);
+                    const viewportLeft = pageLeft.getViewport({ scale });
+                    canvasLeft.width = viewportLeft.width;
+                    canvasLeft.height = viewportLeft.height;
+                    const ctxLeft = canvasLeft.getContext('2d');
+                    await pageLeft.render({ canvasContext: ctxLeft, viewport: viewportLeft }).promise;
+                } else if (frameLeft) {
+                    frameLeft.style.display = 'none';
+                }
+
                 if (spinner) spinner.style.display = 'none';
 
                 // Sayfa render olunca interaktif katmanı ve maskeleri senkronize et
@@ -748,10 +794,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateActiveAyahBanner(ayah);
             });
 
+            lineEl.addEventListener('mouseenter', () => {
+                if (state.isReadingRulerActive) {
+                    updateReadingRuler(i);
+                }
+            });
+
             overlay.appendChild(lineEl);
         }
 
-        // İlk ayet ile aktif banner ve grup seçicileri güncelle
+        // İlk ayet ile aktif banner, okuma cetveli ve grup seçicileri güncelle
         if (ayahs[0]) {
             updateActiveAyahBanner(ayahs[0]);
             highlightActiveAyah(0);
@@ -769,14 +821,77 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeAyahMeal) activeAyahMeal.textContent = ayah.translationTr || 'Diyanet Meali yüklenemedi.';
     }
 
+    /**
+     * Hafızlık Okuma Cetvelini İlgili Satıra Yumuşakça Konumlandırır
+     */
+    function updateReadingRuler(lineIndex) {
+        const ruler = mushafReadingRuler || document.getElementById('mushaf-reading-ruler');
+        if (!ruler) return;
+        if (!state.isReadingRulerActive) {
+            ruler.style.display = 'none';
+            return;
+        }
+        ruler.style.display = 'flex';
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (overlay) {
+            const lines = overlay.querySelectorAll('.ayah-overlay-line');
+            if (lines && lines[lineIndex]) {
+                const targetLine = lines[lineIndex];
+                const topPos = targetLine.offsetTop;
+                const height = targetLine.offsetHeight;
+                ruler.style.transform = `translateY(${topPos}px)`;
+                ruler.style.height = `${height}px`;
+                return;
+            }
+        }
+        const percent = Math.min(14, Math.max(0, lineIndex)) * (100 / 15);
+        ruler.style.transform = `translateY(${percent}%)`;
+    }
+
+    function toggleReadingRuler() {
+        state.isReadingRulerActive = !state.isReadingRulerActive;
+        const btn = dockBtnRuler || document.getElementById('dock-btn-ruler');
+        if (btn) btn.classList.toggle('active', state.isReadingRulerActive);
+        const curIdx = window.audioEngine.currentAyahIndex || 0;
+        highlightActiveAyah(curIdx);
+    }
+
+    function toggleSpreadMode() {
+        state.isSpreadMode = !state.isSpreadMode;
+        const wrapper = mushafScaleWrapper || document.getElementById('mushaf-scale-wrapper');
+        const dockSpread = dockBtnSpread || document.getElementById('dock-btn-spread');
+        if (wrapper) {
+            wrapper.classList.toggle('spread-mode-active', state.isSpreadMode);
+        }
+        if (dockSpread) {
+            dockSpread.classList.toggle('active', state.isSpreadMode);
+        }
+        renderFacsimilePage(state.currentPage);
+    }
+
+    function applyMushafZoom(newZoom) {
+        state.mushafZoom = Math.min(1.4, Math.max(0.7, parseFloat(newZoom.toFixed(2))));
+        const wrapper = mushafScaleWrapper || document.getElementById('mushaf-scale-wrapper');
+        if (wrapper) {
+            wrapper.style.transform = `scale(${state.mushafZoom})`;
+            wrapper.style.transformOrigin = 'top center';
+        }
+    }
+
     function highlightActiveAyah(index) {
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
         if (overlay) {
             const lines = overlay.querySelectorAll('.ayah-overlay-line');
+            let activeLineIdx = 0;
             lines.forEach(line => {
                 const aIdx = parseInt(line.dataset.ayahIndex, 10);
-                line.classList.toggle('active-reading', aIdx === index);
+                const isActive = (aIdx === index);
+                line.classList.toggle('active-reading', isActive);
+                if (isActive) {
+                    activeLineIdx = parseInt(line.dataset.lineIndex, 10) || 0;
+                }
             });
+            updateReadingRuler(activeLineIdx);
         }
 
         if (state.pageAyahs && state.pageAyahs[index]) {
@@ -789,25 +904,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function populateGroupSelectors(ayahs) {
-        if (!selGroupStart || !selGroupEnd || !ayahs || ayahs.length === 0) return;
-        selGroupStart.innerHTML = '';
-        selGroupEnd.innerHTML = '';
-
-        ayahs.forEach((a, idx) => {
-            const opt1 = document.createElement('option');
-            opt1.value = idx;
-            opt1.textContent = `${idx + 1}. Ayet (${a.surahNameTr} ${a.ayahNumber})`;
-            selGroupStart.appendChild(opt1);
-
-            const opt2 = document.createElement('option');
-            opt2.value = idx;
-            opt2.textContent = `${idx + 1}. Ayet (${a.surahNameTr} ${a.ayahNumber})`;
-            if (idx === Math.min(2, ayahs.length - 1)) opt2.selected = true;
-            selGroupEnd.appendChild(opt2);
-        });
-    }
-
     function highlightAyahGroup(startIdx, endIdx) {
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
         if (!overlay) return;
@@ -815,7 +911,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lines.forEach(line => {
             const aIdx = parseInt(line.dataset.ayahIndex, 10);
             const inGrp = aIdx >= startIdx && aIdx <= endIdx;
-            line.style.outline = inGrp ? '1px dashed var(--gold-bright)' : 'none';
+            line.style.outline = inGrp ? '1.5px dashed var(--gold-bright)' : 'none';
         });
     }
 
@@ -849,9 +945,10 @@ document.addEventListener('DOMContentLoaded', () => {
         lines.forEach((line, idx) => {
             const block = document.createElement('div');
             block.className = 'mask-overlay-block';
+            if (state.maskMode === 'peek') block.classList.add('peek-hint');
             block.id = `mask-block-${idx}`;
             block.dataset.lineIdx = idx;
-            block.innerHTML = `<span>🔒 Ezber Kontrolü (Tıkla ve Aç)</span>`;
+            block.innerHTML = `<span><i class="fa-solid fa-eye-slash"></i> Ezber Perdesi (Aç/Kapat)</span>`;
 
             block.style.top = line.offsetTop + 'px';
             block.style.left = line.offsetLeft + 'px';
@@ -860,7 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             block.addEventListener('click', (ev) => {
                 ev.stopPropagation();
-                block.classList.add('revealed');
+                block.classList.toggle('revealed');
             });
 
             maskLayer.appendChild(block);
@@ -880,16 +977,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function toggleAyahMaskByIndex(ayahIndex) {
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (!overlay) return;
+        const lines = overlay.querySelectorAll('.ayah-overlay-line');
+        lines.forEach((line, idx) => {
+            const aIdx = parseInt(line.dataset.ayahIndex, 10);
+            if (aIdx === ayahIndex) {
+                const maskBlock = document.getElementById(`mask-block-${idx}`);
+                if (maskBlock) maskBlock.classList.toggle('revealed');
+            }
+        });
+    }
+
     function toggleHafizMask() {
-        state.isHafizMaskActive = !state.isHafizMaskActive;
+        if (!state.isHafizMaskActive) {
+            state.isHafizMaskActive = true;
+            state.maskMode = 'full';
+        } else if (state.maskMode === 'full') {
+            state.maskMode = 'peek';
+        } else {
+            state.isHafizMaskActive = false;
+            state.maskMode = 'off';
+        }
+
         const maskLayer = mushafMaskOverlay || document.getElementById('mushaf-mask-overlay');
         const btn = btnToggleHafizMask || document.getElementById('btn-toggle-hafiz-mask');
+        const dockMask = dockBtnMask || document.getElementById('dock-btn-mask');
 
         if (btn) {
             btn.classList.toggle('active', state.isHafizMaskActive);
             btn.innerHTML = state.isHafizMaskActive 
-                ? '<i class="fa-solid fa-eye"></i> <span>Perdeyi Kaldır</span>' 
+                ? (state.maskMode === 'peek' ? '<i class="fa-solid fa-eye-low-vision"></i> <span>İpucu Modu</span>' : '<i class="fa-solid fa-eye"></i> <span>Perdeyi Kaldır</span>')
                 : '<i class="fa-solid fa-eye-slash"></i> <span>Ezber Perdesi</span>';
+        }
+        if (dockMask) {
+            dockMask.classList.toggle('active', state.isHafizMaskActive);
         }
 
         if (maskLayer) {
@@ -1263,16 +1386,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Popover Butonları
-        popBtnPlay.addEventListener('click', () => {
-            ayahQuickActions.style.display = 'none';
-            window.audioEngine.jumpToAyah(selectedAyahIndexForPopover);
-        });
-        popBtnRepeat.addEventListener('click', () => {
-            ayahQuickActions.style.display = 'none';
-            selectRepeats.value = "5";
-            window.audioEngine.setRepeats(5);
-            window.audioEngine.jumpToAyah(selectedAyahIndexForPopover);
-        });
+        if (popBtnPlay) {
+            popBtnPlay.addEventListener('click', () => {
+                ayahQuickActions.style.display = 'none';
+                window.audioEngine.jumpToAyah(selectedAyahIndexForPopover);
+            });
+        }
+        if (popBtnRepeat) {
+            popBtnRepeat.addEventListener('click', () => {
+                ayahQuickActions.style.display = 'none';
+                selectRepeats.value = "3";
+                window.audioEngine.setRepeats(3);
+                window.audioEngine.jumpToAyah(selectedAyahIndexForPopover);
+            });
+        }
+        if (popBtnToggleMask) {
+            popBtnToggleMask.addEventListener('click', () => {
+                ayahQuickActions.style.display = 'none';
+                toggleAyahMaskByIndex(selectedAyahIndexForPopover);
+            });
+        }
         if (popBtnGroupStart) {
             popBtnGroupStart.addEventListener('click', () => {
                 ayahQuickActions.style.display = 'none';
@@ -1308,12 +1441,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.audioEngine.setSliceMode(count, reps, dir, isCumulative);
             });
         }
-        popBtnMeal.addEventListener('click', () => {
-            ayahQuickActions.style.display = 'none';
-            translationDrawer.classList.add('open');
-            const targetEl = document.getElementById(`drawer-ayah-${selectedAyahIndexForPopover}`);
-            if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
-        });
+        if (popBtnMeal) {
+            popBtnMeal.addEventListener('click', () => {
+                ayahQuickActions.style.display = 'none';
+                translationDrawer.classList.add('open');
+                const targetEl = document.getElementById(`drawer-ayah-${selectedAyahIndexForPopover}`);
+                if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // ==========================================
+        // Yüzen Kontrol Kapsülü (Floating Dock) & Toolbar
+        // ==========================================
+        if (dockBtnRuler) {
+            dockBtnRuler.addEventListener('click', () => toggleReadingRuler());
+        }
+        if (dockBtnMask) {
+            dockBtnMask.addEventListener('click', () => toggleHafizMask());
+        }
+        if (btnToggleHafizMask) {
+            btnToggleHafizMask.addEventListener('click', () => toggleHafizMask());
+        }
+        if (dockBtnSpread) {
+            dockBtnSpread.addEventListener('click', () => toggleSpreadMode());
+        }
+        if (dockBtnZoomIn) {
+            dockBtnZoomIn.addEventListener('click', () => applyMushafZoom(state.mushafZoom + 0.1));
+        }
+        if (dockBtnZoomOut) {
+            dockBtnZoomOut.addEventListener('click', () => applyMushafZoom(state.mushafZoom - 0.1));
+        }
+        if (dockBtnZoomReset) {
+            dockBtnZoomReset.addEventListener('click', () => applyMushafZoom(1.0));
+        }
+        if (dockBtnRepeat3) {
+            dockBtnRepeat3.addEventListener('click', () => {
+                selectRepeats.value = "3";
+                window.audioEngine.setRepeats(3);
+                const curIdx = window.audioEngine.currentAyahIndex || 0;
+                window.audioEngine.jumpToAyah(curIdx);
+            });
+        }
 
         // ==========================================
         // Ezber Stratejisi Olayları
