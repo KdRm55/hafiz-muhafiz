@@ -549,99 +549,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Rahle / Çift Sayfa Görünümü Elemanları
         const frameLeft = framePageLeft || document.getElementById('frame-page-left');
-        const canvasLeft = mushafDiyanetCanvasLeft || document.getElementById('mushaf-diyanet-canvas-left');
+        const imgLeft = document.getElementById('mushaf-image-left');
         const tagLeft = mushafLeftPageTag || document.getElementById('mushaf-left-page-tag');
 
-        if (facType === 'diyanet-pdf') {
-            if (img) img.style.display = 'none';
-            if (canvas) canvas.style.display = 'block';
+        if (canvas) canvas.style.display = 'none';
+
+        if (img) {
+            img.style.display = 'block';
             if (spinner) {
-                if (spinnerText) spinnerText.textContent = 'Diyanet resmi Mushaf sayfası hazırlanıyor...';
+                if (spinnerText) spinnerText.textContent = 'Mushaf sayfası hazırlanıyor...';
                 spinner.style.display = 'flex';
             }
-
-            const doc = await getDiyanetPdf();
-            if (!doc) {
-                // Fallback to Medine image if PDF fails
-                if (canvas) canvas.style.display = 'none';
-                if (img) {
-                    img.style.display = 'block';
-                    img.src = QURAN_DATA.getPageImageUrl(pageNumber, 'madani');
-                }
+            img.style.opacity = '0.4';
+            img.onload = () => {
                 if (spinner) spinner.style.display = 'none';
-                return;
-            }
-            try {
-                // Diyanet PDF Eşleşmesi:
-                // PDF 1: Kapak
-                // PDF 2: Fâtiha (Mushaf Sayfa 1)
-                // PDF 3: Bakara 1-5 / Elif-Lâm-Mîm (Mushaf Sayfa 2)
-                // PDF 4: Bakara 6-16 (Mushaf Sayfa 3)
-                // PDF 475: Mü'min / Gâfir 59-66 (Mushaf Sayfa 474)
-                // PDF 605: İhlâs, Felak, Nâs (Mushaf Sayfa 604)
-                // Formül: Mushaf Sayfa p -> PDF Sayfa p + 1
-                const pdfPageNum = Math.min(Math.max(1, pageNumber + 1), doc.numPages);
-                const page = await doc.getPage(pdfPageNum);
-
-                const scale = window.devicePixelRatio && window.devicePixelRatio > 1.5 ? 2.0 : 1.7;
-                // Diyanet PDF sayfaları doğal olarak dik (portrait) formatındadır
-                const viewport = page.getViewport({ scale });
-
-                if (canvas) {
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    const ctx = canvas.getContext('2d');
-                    await page.render({ canvasContext: ctx, viewport }).promise;
-                }
-
-                // Rahle / Çift Sayfa (Spread Mode) Render Mantığı
-                if (state.isSpreadMode && frameLeft && canvasLeft) {
-                    frameLeft.style.display = 'block';
-                    // Çift sayfa: Eğer sağ sayfa tek ise önceki çifti, çift ise sonrakini aç
-                    const leftPageNum = (pageNumber % 2 === 0) ? (pageNumber + 1 <= 604 ? pageNumber + 1 : pageNumber) : pageNumber;
-                    if (tagLeft) tagLeft.textContent = `Sayfa ${leftPageNum}`;
-                    const pdfPageLeftNum = Math.min(Math.max(1, leftPageNum + 1), doc.numPages);
-                    const pageLeft = await doc.getPage(pdfPageLeftNum);
-                    const viewportLeft = pageLeft.getViewport({ scale });
-                    canvasLeft.width = viewportLeft.width;
-                    canvasLeft.height = viewportLeft.height;
-                    const ctxLeft = canvasLeft.getContext('2d');
-                    await pageLeft.render({ canvasContext: ctxLeft, viewport: viewportLeft }).promise;
-                } else if (frameLeft) {
-                    frameLeft.style.display = 'none';
-                }
-
-                if (spinner) spinner.style.display = 'none';
-
-                // Sayfa render olunca interaktif katmanı ve maskeleri senkronize et
+                img.style.opacity = '1';
                 if (state.pageAyahs && state.pageAyahs.length > 0) {
                     buildDiyanetInteractiveOverlay(state.pageAyahs);
                 }
-            } catch (renderErr) {
-                console.error('[PDF.js] Sayfa render hatası:', renderErr);
+            };
+            img.onerror = () => {
+                img.src = QURAN_DATA.getFallbackPageImageUrl(pageNumber, facType);
                 if (spinner) spinner.style.display = 'none';
-            }
-        } else {
-            // Medine, Tecvidli Görseli
-            if (canvas) canvas.style.display = 'none';
-            if (img) {
-                img.style.display = 'block';
-                if (spinner) {
-                    if (spinnerText) spinnerText.textContent = 'Mushaf sayfası hazırlanıyor...';
-                    spinner.style.display = 'flex';
+                img.style.opacity = '1';
+                if (state.pageAyahs && state.pageAyahs.length > 0) {
+                    buildDiyanetInteractiveOverlay(state.pageAyahs);
                 }
-                img.style.opacity = '0.3';
-                img.onload = () => {
-                    if (spinner) spinner.style.display = 'none';
-                    img.style.opacity = '1';
-                };
-                img.onerror = () => {
-                    img.src = QURAN_DATA.getFallbackPageImageUrl(pageNumber, facType);
-                    if (spinner) spinner.style.display = 'none';
-                    img.style.opacity = '1';
-                };
-                img.src = QURAN_DATA.getPageImageUrl(pageNumber, facType);
-            }
+            };
+            img.src = QURAN_DATA.getPageImageUrl(pageNumber, facType);
+        }
+
+        // Rahle / Çift Sayfa (Spread Mode)
+        if (state.isSpreadMode && frameLeft && imgLeft) {
+            frameLeft.style.display = 'block';
+            const leftPageNum = (pageNumber % 2 === 0) ? (pageNumber + 1 <= 604 ? pageNumber + 1 : pageNumber) : pageNumber;
+            if (tagLeft) tagLeft.textContent = `Sayfa ${leftPageNum}`;
+            imgLeft.style.display = 'block';
+            imgLeft.src = QURAN_DATA.getPageImageUrl(leftPageNum, facType);
+        } else if (frameLeft) {
+            frameLeft.style.display = 'none';
         }
     }
 

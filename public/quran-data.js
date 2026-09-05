@@ -166,9 +166,11 @@ const QURAN_DATA = {
         return this.juzList.find(j => pageNumber >= j.startPage && pageNumber <= j.endPage) || this.juzList[0];
     },
 
-    // Yüksek Çözünürlüklü Mushaf Sayfası Görsel URL'si (Medine Osman Taha, Tecvidli & Varş)
-    getPageImageUrl(pageNumber, type = 'madani') {
-        if (type === 'tajweed') {
+    // Yüksek Çözünürlüklü Mushaf Sayfası Görsel URL'si (Diyanet Resmi 15 Satır, Medine Osman Taha, Tecvidli)
+    getPageImageUrl(pageNumber, type = 'diyanet-pdf') {
+        if (type === 'diyanet-pdf' || type === 'diyanet') {
+            return `./diyanet_pages/${pageNumber}.webp`;
+        } else if (type === 'tajweed') {
             return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/easyquran.com/hafs-tajweed/${pageNumber}.jpg`;
         } else if (type === 'warsh') {
             return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/warsh/${pageNumber}.jpg`;
@@ -176,8 +178,10 @@ const QURAN_DATA = {
         return `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/kfgqpc/hafs-wasat/${pageNumber}.jpg`;
     },
 
-    getFallbackPageImageUrl(pageNumber, type = 'madani') {
-        if (type === 'tajweed') {
+    getFallbackPageImageUrl(pageNumber, type = 'diyanet-pdf') {
+        if (type === 'diyanet-pdf' || type === 'diyanet') {
+            return `./diyanet_pages/${pageNumber}.webp`;
+        } else if (type === 'tajweed') {
             return `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/easyquran.com/hafs-tajweed/${pageNumber}.jpg`;
         } else if (type === 'warsh') {
             return `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/kfgqpc/warsh/${pageNumber}.jpg`;
