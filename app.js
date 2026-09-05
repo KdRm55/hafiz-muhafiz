@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Canlı Ses Takip İbresini (Zarif SVG Ok/Üçgen) Okunan Satıra Akıcı Şekilde Konumlandırır
+     * Canlı Satır Altı Takip İbresini (Alt Çizgi + Yukarı Ok) Okunan Satırın Altına Akıcı Şekilde Konumlandırır
      */
     function updateAudioTrackerPointer(lineIndex, isVisible = true) {
         const pointer = mushafAudioPointer || document.getElementById('mushaf-audio-pointer');
@@ -795,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const clampedIdx = Math.max(0, Math.min(lines.length - 1, lineIndex));
                 const targetLine = lines[clampedIdx];
                 if (targetLine) {
-                    const topOffset = targetLine.offsetTop + (targetLine.offsetHeight / 2) - 16;
+                    const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 14;
                     pointer.style.transform = `translateY(${topOffset}px)`;
                     return;
                 }
@@ -803,7 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const frameHeight = frame ? frame.clientHeight : 700;
         const lineH = frameHeight / 15;
-        const topOffset = (Math.max(0, Math.min(14, lineIndex)) * lineH) + (lineH / 2) - 16;
+        const topOffset = ((Math.max(0, Math.min(14, lineIndex)) + 1) * lineH) - 14;
         pointer.style.transform = `translateY(${topOffset}px)`;
     }
 

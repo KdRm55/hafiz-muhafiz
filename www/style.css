@@ -1407,50 +1407,59 @@ body {
     background: rgba(212, 175, 55, 0.08);
 }
 
-/* Canlı Okunan Ayet Vurgusu (Zarif Altın Vurgu - Metni Kapatmaz) */
+/* Canlı Okunan Ayet Vurgusu (Hafif ve Sade Odak) */
 .ayah-overlay-line.active-reading {
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.18) 50%, rgba(212, 175, 55, 0.08) 100%);
-    box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.25);
-    border-left: 3px solid rgba(255, 215, 0, 0.85);
-    border-right: 3px solid rgba(255, 215, 0, 0.85);
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.03) 0%, rgba(212, 175, 55, 0.12) 50%, rgba(212, 175, 55, 0.03) 100%);
 }
 
-/* Canlı Ses Takip İbresi (Zarif Ok / Üçgen İbre) */
-.mushaf-audio-pointer {
+/* Canlı Satır Altı Ses Takip İbresi (Zarif Alt Çizgi + Yukarı Ok) */
+.mushaf-audio-bottom-tracker {
     position: absolute;
-    right: 4px;
-    top: 0;
-    width: 32px;
-    height: 32px;
+    left: 4.5%;
+    right: 4.5%;
+    height: 16px;
     z-index: 30;
     pointer-events: none;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-end;
     transform: translateY(0);
-    transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.25, 1);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
-.mushaf-audio-pointer .pointer-arrow-marker {
+.mushaf-audio-bottom-tracker .bottom-tracker-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(255, 215, 0, 0.95) 50%, rgba(212, 175, 55, 0.1) 100%);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.85);
+    border-radius: 2px;
+}
+
+.mushaf-audio-bottom-tracker .bottom-tracker-arrow {
+    position: absolute;
+    bottom: 2px;
+    right: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.95)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
-    animation: pointer-nudge 1.3s infinite ease-in-out;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.95)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+    animation: arrow-bounce 1.4s infinite ease-in-out;
 }
 
-.mushaf-audio-pointer .pointer-svg {
-    width: 24px;
-    height: 24px;
+.mushaf-audio-bottom-tracker .tracker-arrow-svg {
+    width: 18px;
+    height: 11px;
     display: block;
 }
 
-@keyframes pointer-nudge {
+@keyframes arrow-bounce {
     0%, 100% {
-        transform: translateX(0);
+        transform: translateY(0);
     }
     50% {
-        transform: translateX(-5px);
+        transform: translateY(-3px);
     }
 }
 
