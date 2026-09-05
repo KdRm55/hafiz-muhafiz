@@ -478,10 +478,6 @@
 
                 <!-- Yüzen Hızlı Hafızlık Kontrol Kapsülü (Floating Glassmorphism Tool Dock) -->
                 <aside class="mushaf-floating-dock" id="mushaf-floating-dock">
-                    <button id="dock-btn-ruler" class="dock-btn active" title="Hafızlık Okuma Cetveli (Açık/Kapalı)">
-                        <i class="fa-solid fa-ruler-horizontal"></i>
-                        <span class="dock-tooltip">Okuma Cetveli</span>
-                    </button>
                     <button id="dock-btn-mask" class="dock-btn" title="Ezber Perdesi (Kapat / İpucu / Aç)">
                         <i class="fa-solid fa-eye-slash"></i>
                         <span class="dock-tooltip">Ezber Perdesi</span>
@@ -551,10 +547,9 @@
                                     <!-- 4. Katman: Hafızlık Ezber / Perdeleme Maskesi (Örtü) -->
                                     <div id="mushaf-mask-overlay" class="mushaf-mask-layer" style="display:none;"></div>
 
-                                    <!-- 5. Katman: Hafızlık Okuma Cetveli (Focus Reading Ruler) -->
-                                    <div id="mushaf-reading-ruler" class="mushaf-reading-ruler">
-                                        <div class="ruler-line"></div>
-                                        <div class="ruler-indicator"><i class="fa-solid fa-caret-left"></i></div>
+                                    <!-- 5. Katman: Canlı Ses Takip İbresi (Audio Tracker Pointer) -->
+                                    <div id="mushaf-audio-pointer" class="mushaf-audio-pointer" style="display:none;">
+                                        <div class="pointer-triangle"><i class="fa-solid fa-caret-left"></i></div>
                                     </div>
                                 </div>
 

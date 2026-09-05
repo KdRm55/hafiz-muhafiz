@@ -1399,72 +1399,61 @@ body {
     position: relative;
     cursor: pointer;
     border-radius: 4px;
-    transition: all 0.22s ease-out;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
     margin: 0.5px 0;
 }
 
 .ayah-overlay-line:hover {
-    background: rgba(212, 175, 55, 0.15);
-    border: 1px dashed rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.08);
 }
 
-/* Canlı Okunan Ayet Parlaması (Golden Aura) */
+/* Canlı Okunan Ayet Vurgusu (Zarif Altın Vurgu - Metni Kapatmaz) */
 .ayah-overlay-line.active-reading {
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.24) 0%, rgba(212, 175, 55, 0.46) 50%, rgba(212, 175, 55, 0.24) 100%);
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
-    border: 1.5px solid rgba(255, 215, 0, 0.8);
-    animation: pulse-glow 2s infinite alternate;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.18) 50%, rgba(212, 175, 55, 0.08) 100%);
+    box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.25);
+    border-left: 3px solid rgba(255, 215, 0, 0.85);
+    border-right: 3px solid rgba(255, 215, 0, 0.85);
 }
 
-@keyframes pulse-glow {
-    0% {
-        box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
-        background-color: rgba(212, 175, 55, 0.24);
-    }
-    100% {
-        box-shadow: 0 0 26px rgba(212, 175, 55, 0.85);
-        background-color: rgba(212, 175, 55, 0.48);
-    }
-}
-
-/* Hafızlık Okuma Cetveli (Focus Reading Ruler) */
-.mushaf-reading-ruler {
+/* Canlı Ses Takip İbresi (Zarif Ok / Üçgen İbre) */
+.mushaf-audio-pointer {
     position: absolute;
-    left: 2.5%;
-    right: 2.5%;
-    height: 6.66%;
-    z-index: 12;
+    right: -10px;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    z-index: 20;
     pointer-events: none;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     transform: translateY(0);
-    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), height 0.2s ease, opacity 0.2s ease;
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.04) 0%, rgba(212, 175, 55, 0.16) 50%, rgba(212, 175, 55, 0.04) 100%);
-    border-top: 1px solid rgba(255, 215, 0, 0.4);
-    border-bottom: 2px solid var(--gold-bright);
-    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.35), inset 0 0 10px rgba(212, 175, 55, 0.1);
-    border-radius: 4px;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
-.mushaf-reading-ruler .ruler-indicator {
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-primary) 100%);
+.mushaf-audio-pointer .pointer-triangle {
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, #ffd700 0%, #d4af37 100%);
     color: #04140d;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    box-shadow: 0 0 12px var(--gold-glow);
-    margin-right: -12px;
-    animation: ruler-pulse 1.6s infinite ease-in-out;
+    font-size: 0.95rem;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.35);
+    animation: pointer-pulse 1.8s infinite ease-in-out;
 }
 
-@keyframes ruler-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); box-shadow: 0 0 16px var(--gold-glow); }
+@keyframes pointer-pulse {
+    0%, 100% {
+        transform: scale(1) translateX(0);
+        filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+    }
+    50% {
+        transform: scale(1.12) translateX(-3px);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.95));
+    }
 }
 
 /* Hafızlık Ezber / Perdeleme Maskesi */

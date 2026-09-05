@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPage: 474,
         zoomLevel: 100,       // 80% .. 150%
         mushafZoom: 1.0,      // Mushaf viewport scale 0.8 .. 1.4
-        isReadingRulerActive: true, // Hafızlık Okuma Cetveli
+        isAudioTrackerActive: true, // Canlı Ses Takip İbresi
         isSpreadMode: false,  // Rahle / Çift Sayfa Görünümü
         maskMode: 'off',      // 'off', 'full', 'peek'
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
@@ -115,12 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const mushafImage = document.getElementById('mushaf-image');
     const mushafInteractiveOverlay = document.getElementById('mushaf-interactive-overlay');
     const mushafMaskOverlay = document.getElementById('mushaf-mask-overlay');
-    const mushafReadingRuler = document.getElementById('mushaf-reading-ruler');
+    const mushafAudioPointer = document.getElementById('mushaf-audio-pointer');
     const btnToggleHafizMask = document.getElementById('btn-toggle-hafiz-mask');
 
     // Floating Tool Dock & Spread Elemanları
     const mushafFloatingDock = document.getElementById('mushaf-floating-dock');
-    const dockBtnRuler = document.getElementById('dock-btn-ruler');
     const dockBtnMask = document.getElementById('dock-btn-mask');
     const dockBtnSpread = document.getElementById('dock-btn-spread');
     const dockBtnZoomIn = document.getElementById('dock-btn-zoom-in');
@@ -755,16 +754,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 highlightActiveAyah(ayahIdx);
             });
 
-            lineEl.addEventListener('mouseenter', () => {
-                if (state.isReadingRulerActive) {
-                    updateReadingRuler(i);
-                }
-            });
-
             overlay.appendChild(lineEl);
         }
 
-        // İlk ayet ile aktif banner, okuma cetveli ve grup seçicileri güncelle
+        // İlk ayet ile aktif banner, ses takipçisi ve grup seçicileri güncelle
         const curIdx = window.audioEngine ? (window.audioEngine.currentAyahIndex || 0) : 0;
         if (ayahs[curIdx]) {
             updateActiveAyahBanner(ayahs[curIdx]);
@@ -784,16 +777,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Hafızlık Okuma Cetvelini İlgili Satıra Yumuşakça Konumlandırır
+     * Canlı Ses Takip İbresini (Zarif Ok/Üçgen) Okunan Satıra Akıcı Şekilde Konumlandırır
      */
-    function updateReadingRuler(lineIndex) {
-        const ruler = mushafReadingRuler || document.getElementById('mushaf-reading-ruler');
-        if (!ruler) return;
-        if (!state.isReadingRulerActive) {
-            ruler.style.display = 'none';
+    function updateAudioTrackerPointer(lineIndex, isVisible = true) {
+        const pointer = mushafAudioPointer || document.getElementById('mushaf-audio-pointer');
+        if (!pointer) return;
+        if (!isVisible) {
+            pointer.style.display = 'none';
             return;
         }
-        ruler.style.display = 'flex';
+        pointer.style.display = 'flex';
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
         const frame = framePageRight || document.getElementById('frame-page-right');
         if (overlay && frame) {
@@ -805,24 +798,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const frameRect = frame.getBoundingClientRect();
                     const lineRect = targetLine.getBoundingClientRect();
                     if (frameRect.height > 0) {
-                        const topOffset = lineRect.top - frameRect.top;
-                        ruler.style.transform = `translateY(${topOffset}px)`;
-                        ruler.style.height = `${lineRect.height}px`;
+                        const topOffset = (lineRect.top - frameRect.top) + (lineRect.height / 2) - 14;
+                        pointer.style.transform = `translateY(${topOffset}px)`;
                         return;
                     }
                 }
             }
         }
         const percent = Math.min(14, Math.max(0, lineIndex)) * (100 / 15);
-        ruler.style.transform = `translateY(${percent}%)`;
-    }
-
-    function toggleReadingRuler() {
-        state.isReadingRulerActive = !state.isReadingRulerActive;
-        const btn = dockBtnRuler || document.getElementById('dock-btn-ruler');
-        if (btn) btn.classList.toggle('active', state.isReadingRulerActive);
-        const curIdx = window.audioEngine.currentAyahIndex || 0;
-        highlightActiveAyah(curIdx);
+        pointer.style.transform = `translateY(${percent}%)`;
     }
 
     function toggleSpreadMode() {
@@ -849,9 +833,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function highlightActiveAyah(index) {
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        let activeLineIdx = 0;
         if (overlay) {
             const lines = overlay.querySelectorAll('.ayah-overlay-line');
-            let activeLineIdx = 0;
             let found = false;
             lines.forEach(line => {
                 const aIdx = parseInt(line.dataset.ayahIndex, 10);
@@ -862,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     found = true;
                 }
             });
-            updateReadingRuler(activeLineIdx);
+            updateAudioTrackerPointer(activeLineIdx, true);
         }
 
         if (state.pageAyahs && state.pageAyahs[index]) {
@@ -1424,9 +1408,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // ==========================================
         // Yüzen Kontrol Kapsülü (Floating Dock) & Toolbar
         // ==========================================
-        if (dockBtnRuler) {
-            dockBtnRuler.addEventListener('click', () => toggleReadingRuler());
-        }
         if (dockBtnMask) {
             dockBtnMask.addEventListener('click', () => toggleHafizMask());
         }
