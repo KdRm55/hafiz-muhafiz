@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPage: 474,
         zoomLevel: 100,       // 80% .. 150%
         mushafZoom: 1.0,      // Mushaf viewport scale 0.8 .. 1.4
-        isReadingRulerActive: true, // Hafızlık Okuma Cetveli
+        isAudioTrackerActive: true, // Canlı Ses Takip İbresi
         isSpreadMode: false,  // Rahle / Çift Sayfa Görünümü
         maskMode: 'off',      // 'off', 'full', 'peek'
         paperTheme: 'night',  // 'night', 'sepia', 'cream'
@@ -115,12 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const mushafImage = document.getElementById('mushaf-image');
     const mushafInteractiveOverlay = document.getElementById('mushaf-interactive-overlay');
     const mushafMaskOverlay = document.getElementById('mushaf-mask-overlay');
-    const mushafReadingRuler = document.getElementById('mushaf-reading-ruler');
+    const mushafAudioPointer = document.getElementById('mushaf-audio-pointer');
     const btnToggleHafizMask = document.getElementById('btn-toggle-hafiz-mask');
 
     // Floating Tool Dock & Spread Elemanları
     const mushafFloatingDock = document.getElementById('mushaf-floating-dock');
-    const dockBtnRuler = document.getElementById('dock-btn-ruler');
     const dockBtnMask = document.getElementById('dock-btn-mask');
     const dockBtnSpread = document.getElementById('dock-btn-spread');
     const dockBtnZoomIn = document.getElementById('dock-btn-zoom-in');
@@ -331,13 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setupNetworkStatus();
         populateSelectors();
         populateChainSelectors();
+        loadLesson(state.currentJuz, state.currentRotation);
         bindEvents();
         setupAudioEngineCallbacks();
         setMushafFont(state.mushafFont);
         if (headerReciterName && window.audioEngine && window.audioEngine.currentReciter) {
             headerReciterName.textContent = window.audioEngine.currentReciter.name.replace(/\s*\(.*?\)\s*/g, '');
         }
-        loadLesson(state.currentJuz, state.currentRotation);
         updateHeaderStats();
         showDashboard();
     }
@@ -717,54 +716,83 @@ document.addEventListener('DOMContentLoaded', () => {
             mushafSurahTitle.textContent = ayahs[0].surahNameAr ? `سُورَةُ ${ayahs[0].surahNameAr} (${ayahs[0].surahNameTr})` : `${ayahs[0].surahNameTr} Suresi`;
         }
 
-        // 15 satırlık Diyanet standardı satır dağılımı
+        // 15 satırlık Diyanet standardı satır dağılımı ve her ayetin satır parçaları
         const totalLines = 15;
         const totalChars = ayahs.reduce((sum, a) => sum + (a.textArabic ? a.textArabic.length : 1), 0);
+        const charsPerLine = Math.max(1, totalChars / totalLines);
 
-        let lineAyahMap = [];
-        let currentLine = 0;
+        let charOffset = 0;
+        state.ayahSpans = {};
 
-        ayahs.forEach((ayah, idx) => {
+        ayahs.forEach((ayah, aIdx) => {
             const charLen = ayah.textArabic ? ayah.textArabic.length : 1;
-            const lineSpan = Math.max(1, Math.round((charLen / totalChars) * totalLines));
-            for (let l = 0; l < lineSpan && currentLine < totalLines; l++) {
-                lineAyahMap.push(idx);
-                currentLine++;
+            const startChar = charOffset;
+            const endChar = charOffset + charLen;
+            charOffset = endChar;
+
+            const startLine = Math.min(totalLines - 1, Math.floor(startChar / charsPerLine));
+            const endLine = Math.min(totalLines - 1, Math.floor(Math.max(startChar, endChar - 1) / charsPerLine));
+
+            const spans = [];
+            for (let l = startLine; l <= endLine; l++) {
+                const lineStartChar = l * charsPerLine;
+                const lineEndChar = (l + 1) * charsPerLine;
+
+                const segStart = Math.max(startChar, lineStartChar);
+                const segEnd = Math.min(endChar, lineEndChar);
+                const segLen = Math.max(1, segEnd - segStart);
+
+                // Satır içindeki ilerleme oranı: 0.0 (satırın en sağı / Arapça başı) -> 1.0 (satırın en solu / Arapça sonu)
+                const startRatio = Math.max(0, Math.min(1, (segStart - lineStartChar) / charsPerLine));
+                const endRatio = Math.max(0, Math.min(1, (segEnd - lineStartChar) / charsPerLine));
+
+                spans.push({
+                    lineIndex: l,
+                    startRatio: startRatio,
+                    endRatio: endRatio,
+                    weight: segLen / charLen
+                });
             }
+
+            state.ayahSpans[aIdx] = spans.length > 0 ? spans : [{
+                lineIndex: startLine,
+                startRatio: 0,
+                endRatio: 1,
+                weight: 1
+            }];
         });
 
-        while (lineAyahMap.length < totalLines) {
-            lineAyahMap.push(ayahs.length - 1);
-        }
-        lineAyahMap = lineAyahMap.slice(0, totalLines);
-
+        // 15 satırlık overlay çizgilerini oluştur
         for (let i = 0; i < totalLines; i++) {
-            const ayahIdx = lineAyahMap[i];
-            const ayah = ayahs[ayahIdx];
+            let bestAyahIdx = 0;
+            let maxWeight = -1;
+            ayahs.forEach((_, aIdx) => {
+                const sp = (state.ayahSpans[aIdx] || []).find(s => s.lineIndex === i);
+                if (sp && sp.weight > maxWeight) {
+                    maxWeight = sp.weight;
+                    bestAyahIdx = aIdx;
+                }
+            });
+
+            const ayah = ayahs[bestAyahIdx] || ayahs[0];
             const lineEl = document.createElement('div');
             lineEl.className = 'ayah-overlay-line';
             lineEl.dataset.lineIndex = i;
-            lineEl.dataset.ayahIndex = ayahIdx;
+            lineEl.dataset.ayahIndex = bestAyahIdx;
             lineEl.title = `${ayah.surahNameTr} Suresi ${ayah.ayahNumber}. Ayet • Tıkla: Dinle & Meal`;
 
             lineEl.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.audioEngine.jumpToAyah(ayahIdx, true);
-                showAyahPopoverOnLine(e, ayahIdx);
+                window.audioEngine.jumpToAyah(bestAyahIdx, true);
+                showAyahPopoverOnLine(e, bestAyahIdx);
                 updateActiveAyahBanner(ayah);
-                highlightActiveAyah(ayahIdx);
-            });
-
-            lineEl.addEventListener('mouseenter', () => {
-                if (state.isReadingRulerActive) {
-                    updateReadingRuler(i);
-                }
+                highlightActiveAyah(bestAyahIdx);
             });
 
             overlay.appendChild(lineEl);
         }
 
-        // İlk ayet ile aktif banner, okuma cetveli ve grup seçicileri güncelle
+        // İlk ayet ile aktif banner, ses takipçisi ve grup seçicileri güncelle
         const curIdx = window.audioEngine ? (window.audioEngine.currentAyahIndex || 0) : 0;
         if (ayahs[curIdx]) {
             updateActiveAyahBanner(ayahs[curIdx]);
@@ -783,46 +811,77 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeAyahMeal) activeAyahMeal.textContent = ayah.translationTr || 'Diyanet Meali yüklenemedi.';
     }
 
+    let lastTrackedLineIndex = -1;
+
     /**
-     * Hafızlık Okuma Cetvelini İlgili Satıra Yumuşakça Konumlandırır
+     * YouTube Mukabele Tarzı Canlı Yeşil Takip Üçgenini Okunan Kelime/Satır Altına Akıcı Şekilde Konumlandırır
      */
-    function updateReadingRuler(lineIndex) {
-        const ruler = mushafReadingRuler || document.getElementById('mushaf-reading-ruler');
-        if (!ruler) return;
-        if (!state.isReadingRulerActive) {
-            ruler.style.display = 'none';
+    function updateMukabeleTracker(ayahIndex, progress = 0, isVisible = true) {
+        const pointer = mushafAudioPointer || document.getElementById('mushaf-audio-pointer');
+        if (!pointer) return;
+        if (!isVisible) {
+            pointer.style.display = 'none';
             return;
         }
-        ruler.style.display = 'flex';
-        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
-        const frame = framePageRight || document.getElementById('frame-page-right');
-        if (overlay && frame) {
-            const lines = overlay.querySelectorAll('.ayah-overlay-line');
-            if (lines && lines.length > 0) {
-                const clampedIdx = Math.max(0, Math.min(lines.length - 1, lineIndex));
-                const targetLine = lines[clampedIdx];
-                if (targetLine) {
-                    const frameRect = frame.getBoundingClientRect();
-                    const lineRect = targetLine.getBoundingClientRect();
-                    if (frameRect.height > 0) {
-                        const topOffset = lineRect.top - frameRect.top;
-                        ruler.style.transform = `translateY(${topOffset}px)`;
-                        ruler.style.height = `${lineRect.height}px`;
-                        return;
-                    }
-                }
-            }
-        }
-        const percent = Math.min(14, Math.max(0, lineIndex)) * (100 / 15);
-        ruler.style.transform = `translateY(${percent}%)`;
-    }
+        pointer.style.display = 'flex';
 
-    function toggleReadingRuler() {
-        state.isReadingRulerActive = !state.isReadingRulerActive;
-        const btn = dockBtnRuler || document.getElementById('dock-btn-ruler');
-        if (btn) btn.classList.toggle('active', state.isReadingRulerActive);
-        const curIdx = window.audioEngine.currentAyahIndex || 0;
-        highlightActiveAyah(curIdx);
+        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
+        if (!overlay) return;
+
+        const subSpans = (state.ayahSpans && state.ayahSpans[ayahIndex]) || [];
+        let activeLineIndex = 0;
+        let lineRatio = 0;
+
+        if (subSpans.length > 0) {
+            const clampedProgress = Math.max(0, Math.min(0.999, progress));
+            let cumWeight = 0;
+            let activeSpan = subSpans[0];
+            let spanProgress = 0;
+
+            for (let s = 0; s < subSpans.length; s++) {
+                const span = subSpans[s];
+                const nextCum = cumWeight + span.weight;
+                if (clampedProgress <= nextCum || s === subSpans.length - 1) {
+                    activeSpan = span;
+                    const spanRange = span.weight > 0 ? span.weight : (1 / subSpans.length);
+                    spanProgress = Math.max(0, Math.min(1, (clampedProgress - cumWeight) / spanRange));
+                    break;
+                }
+                cumWeight = nextCum;
+            }
+
+            activeLineIndex = activeSpan.lineIndex;
+            lineRatio = activeSpan.startRatio + (spanProgress * (activeSpan.endRatio - activeSpan.startRatio));
+        } else {
+            const allLines = overlay.querySelectorAll('.ayah-overlay-line');
+            activeLineIndex = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
+            lineRatio = progress;
+        }
+
+        const targetLine = overlay.querySelector(`.ayah-overlay-line[data-line-index="${activeLineIndex}"]`);
+        if (targetLine) {
+            const lineLeft = targetLine.offsetLeft;
+            const lineWidth = targetLine.offsetWidth;
+            const lineTop = targetLine.offsetTop;
+            const lineHeight = targetLine.offsetHeight;
+
+            // 24px üçgen için Arapça sağdan sola doğru piksel pozisyonu:
+            // lineRatio = 0.0 -> ilk kelimenin tam altı (sağ kenar: "إِنَّ")
+            // lineRatio = 1.0 -> son kelimenin tam altı (sol kenar)
+            const usableWidth = Math.max(20, lineWidth - 32);
+            const posX = lineLeft + (usableWidth * (1 - lineRatio)) + 4;
+            // Kelimenin hemen altına oturan ibre ucu konumu
+            const posY = lineTop + lineHeight - 14;
+
+            if (lastTrackedLineIndex !== -1 && lastTrackedLineIndex !== activeLineIndex) {
+                pointer.style.transition = 'transform 0.06s ease-out';
+            } else {
+                pointer.style.transition = 'transform 0.1s linear';
+            }
+            lastTrackedLineIndex = activeLineIndex;
+
+            pointer.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
+        }
     }
 
     function toggleSpreadMode() {
@@ -848,26 +907,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function highlightActiveAyah(index) {
-        const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
-        if (overlay) {
-            const lines = overlay.querySelectorAll('.ayah-overlay-line');
-            let activeLineIdx = 0;
-            let found = false;
-            lines.forEach(line => {
-                const aIdx = parseInt(line.dataset.ayahIndex, 10);
-                const isActive = (aIdx === index);
-                line.classList.toggle('active-reading', isActive);
-                if (isActive && !found) {
-                    activeLineIdx = parseInt(line.dataset.lineIndex, 10) || 0;
-                    found = true;
-                }
-            });
-            updateReadingRuler(activeLineIdx);
-        }
-
         if (state.pageAyahs && state.pageAyahs[index]) {
             updateActiveAyahBanner(state.pageAyahs[index]);
         }
+        updateMukabeleTracker(index, 0, true);
 
         // Ezber maskesi aktifse çalan ayeti otomatik aç
         if (state.isHafizMaskActive) {
@@ -1171,7 +1214,12 @@ document.addEventListener('DOMContentLoaded', () => {
             timeCurrent.textContent = formatTime(current);
             timeDuration.textContent = formatTime(duration);
             const pct = duration > 0 ? (current / duration) * 100 : 0;
-            progressFill.style.width = `${pct}%`;
+            if (progressFill) progressFill.style.width = (pct) + '%';
+            if (window.audioEngine && window.audioEngine.isPlaying) {
+                const curIdx = window.audioEngine.currentAyahIndex || 0;
+                const progress = duration > 0 ? (current / duration) : 0;
+                updateMukabeleTracker(curIdx, progress, true);
+            }
         };
 
         window.audioEngine.onGapCountdown = (seconds) => {
@@ -1233,14 +1281,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnBrandHome) btnBrandHome.addEventListener('click', () => showDashboard());
 
         // Cüz & Dönüş Değişimi
-        selectJuz.addEventListener('change', (e) => {
-            loadLesson(e.target.value, state.currentRotation);
-            updateDashboardInfo();
-        });
-        selectRotation.addEventListener('change', (e) => {
-            loadLesson(state.currentJuz, e.target.value);
-            updateDashboardInfo();
-        });
+        if (selectJuz) {
+            selectJuz.addEventListener('change', (e) => {
+                loadLesson(e.target.value, state.currentRotation);
+                updateDashboardInfo();
+            });
+        }
+        if (selectRotation) {
+            selectRotation.addEventListener('change', (e) => {
+                loadLesson(state.currentJuz, e.target.value);
+                updateDashboardInfo();
+            });
+        }
 
         // Mod Seçimi (Sadece Ham Ezber ve Dönüş Haslama)
         if (modeHam) modeHam.addEventListener('click', () => setMode('ham'));
@@ -1275,26 +1327,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Sayfa Değiştirme
-        btnPrevPage.addEventListener('click', () => {
-            if (state.currentPage > 1) loadPageData(state.currentPage - 1);
-        });
-        btnNextPage.addEventListener('click', () => {
-            if (state.currentPage < 604) loadPageData(state.currentPage + 1);
-        });
+        if (btnPrevPage) {
+            btnPrevPage.addEventListener('click', () => {
+                if (state.currentPage > 1) loadPageData(state.currentPage - 1);
+            });
+        }
+        if (btnNextPage) {
+            btnNextPage.addEventListener('click', () => {
+                if (state.currentPage < 604) loadPageData(state.currentPage + 1);
+            });
+        }
 
         // Zoom Kontrolleri
-        btnZoomIn.addEventListener('click', () => {
-            if (state.zoomLevel < 150) {
-                state.zoomLevel += 10;
-                applyZoom();
-            }
-        });
-        btnZoomOut.addEventListener('click', () => {
-            if (state.zoomLevel > 80) {
-                state.zoomLevel -= 10;
-                applyZoom();
-            }
-        });
+        if (btnZoomIn) {
+            btnZoomIn.addEventListener('click', () => {
+                if (state.zoomLevel < 150) {
+                    state.zoomLevel += 10;
+                    applyZoom();
+                }
+            });
+        }
+        if (btnZoomOut) {
+            btnZoomOut.addEventListener('click', () => {
+                if (state.zoomLevel > 80) {
+                    state.zoomLevel -= 10;
+                    applyZoom();
+                }
+            });
+        }
 
         // Kağıt Teması Seçimi
         paperThemeBtns.forEach(btn => {
@@ -1307,12 +1367,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Meal Çekmecesi Aç/Kapa
-        btnToggleTranslationDrawer.addEventListener('click', () => {
-            translationDrawer.classList.toggle('open');
-        });
-        btnCloseDrawer.addEventListener('click', () => {
-            translationDrawer.classList.remove('open');
-        });
+        if (btnToggleTranslationDrawer) {
+            btnToggleTranslationDrawer.addEventListener('click', () => {
+                if (translationDrawer) translationDrawer.classList.toggle('open');
+            });
+        }
+        if (btnCloseDrawer) {
+            btnCloseDrawer.addEventListener('click', () => {
+                if (translationDrawer) translationDrawer.classList.remove('open');
+            });
+        }
 
         // Hat Seçimi Dropdown
         const selectMushafFont = document.getElementById('select-mushaf-font');
@@ -1424,9 +1488,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // ==========================================
         // Yüzen Kontrol Kapsülü (Floating Dock) & Toolbar
         // ==========================================
-        if (dockBtnRuler) {
-            dockBtnRuler.addEventListener('click', () => toggleReadingRuler());
-        }
         if (dockBtnMask) {
             dockBtnMask.addEventListener('click', () => toggleHafizMask());
         }
@@ -1552,28 +1613,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Dersi Tamamla
-        btnToggleCompleted.addEventListener('click', () => {
-            window.hafizEngine.toggleCellCompleted(state.currentJuz, state.currentRotation);
-            updateCompletionButton();
-            updateHeaderStats();
-        });
+        if (btnToggleCompleted) {
+            btnToggleCompleted.addEventListener('click', () => {
+                window.hafizEngine.toggleCellCompleted(state.currentJuz, state.currentRotation);
+                updateCompletionButton();
+                updateHeaderStats();
+            });
+        }
 
         // Oynatıcı Kontrolleri
-        btnDeckPlay.addEventListener('click', () => window.audioEngine.togglePlay());
-        btnPrevAyah.addEventListener('click', () => window.audioEngine.prevAyah());
-        btnNextAyah.addEventListener('click', () => window.audioEngine.nextAyah());
+        if (btnDeckPlay) btnDeckPlay.addEventListener('click', () => window.audioEngine.togglePlay());
+        if (btnPrevAyah) btnPrevAyah.addEventListener('click', () => window.audioEngine.prevAyah());
+        if (btnNextAyah) btnNextAyah.addEventListener('click', () => window.audioEngine.nextAyah());
 
-        progressTrack.addEventListener('click', (e) => {
-            const rect = progressTrack.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
-            if (window.audioEngine.audio.duration) {
-                window.audioEngine.audio.currentTime = pos * window.audioEngine.audio.duration;
-            }
-        });
+        if (progressTrack) {
+            progressTrack.addEventListener('click', (e) => {
+                const rect = progressTrack.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                if (window.audioEngine.audio.duration) {
+                    window.audioEngine.audio.currentTime = pos * window.audioEngine.audio.duration;
+                }
+            });
+        }
 
-        selectRepeats.addEventListener('change', (e) => window.audioEngine.setRepeats(e.target.value));
-        selectSpeed.addEventListener('change', (e) => window.audioEngine.setPlaybackRate(e.target.value));
-        selectGap.addEventListener('change', (e) => window.audioEngine.setPauseGap(e.target.value));
+        if (selectRepeats) selectRepeats.addEventListener('change', (e) => window.audioEngine.setRepeats(e.target.value));
+        if (selectSpeed) selectSpeed.addEventListener('change', (e) => window.audioEngine.setPlaybackRate(e.target.value));
+        if (selectGap) selectGap.addEventListener('change', (e) => window.audioEngine.setPauseGap(e.target.value));
 
         // Sayfa Gezginine Tıklayınca Hızlı Atlama
         if (badgePageNum) {
@@ -1601,16 +1666,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setupQuickSearch();
 
         // Modallar
-        btnOpenMatrix.addEventListener('click', () => openMatrixModal());
-        btnOpenReciters.addEventListener('click', () => openRecitersModal());
-        btnOpenStats.addEventListener('click', () => openStatsModal());
+        if (btnOpenMatrix) btnOpenMatrix.addEventListener('click', () => openMatrixModal());
+        if (btnOpenReciters) btnOpenReciters.addEventListener('click', () => openRecitersModal());
+        if (btnOpenStats) btnOpenStats.addEventListener('click', () => openStatsModal());
         if (btnOpenShortcuts && modalShortcuts) {
             btnOpenShortcuts.addEventListener('click', () => modalShortcuts.classList.add('open'));
         }
         if (btnOpenInstall && modalInstall) {
             btnOpenInstall.addEventListener('click', () => modalInstall.classList.add('open'));
         }
-        deckReciterAvatar.addEventListener('click', () => openRecitersModal());
+        if (deckReciterAvatar) deckReciterAvatar.addEventListener('click', () => openRecitersModal());
 
         // PWA Yükleme Yakalayıcı
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -1848,16 +1913,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modeHam) modeHam.classList.add('active');
             if (cardStandardLesson) cardStandardLesson.style.display = 'flex';
             if (panelChainHaslama) panelChainHaslama.style.display = 'none';
-            state.currentPage = state.lesson.hamPage;
-            selectRepeats.value = "5";
-            window.audioEngine.setRepeats(5);
+            state.currentPage = (state.lesson && state.lesson.hamPage) ? state.lesson.hamPage : (state.currentPage || 474);
+            if (selectRepeats) selectRepeats.value = "5";
+            if (window.audioEngine) window.audioEngine.setRepeats(5);
             loadPageData(state.currentPage);
         } else if (mode === 'chain-has') {
             if (modeChainHas) modeChainHas.classList.add('active');
             if (cardStandardLesson) cardStandardLesson.style.display = 'none';
             if (panelChainHaslama) panelChainHaslama.style.display = 'flex';
-            selectRepeats.value = "1";
-            window.audioEngine.setRepeats(1);
+            if (selectRepeats) selectRepeats.value = "1";
+            if (window.audioEngine) window.audioEngine.setRepeats(1);
             loadChainHaslama(state.chainHaslama.targetRotation);
         }
     }

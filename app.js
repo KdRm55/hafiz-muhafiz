@@ -716,70 +716,80 @@ document.addEventListener('DOMContentLoaded', () => {
             mushafSurahTitle.textContent = ayahs[0].surahNameAr ? `سُورَةُ ${ayahs[0].surahNameAr} (${ayahs[0].surahNameTr})` : `${ayahs[0].surahNameTr} Suresi`;
         }
 
-        // 15 satırlık Diyanet standardı satır dağılımı
+        // 15 satırlık Diyanet standardı satır dağılımı ve her ayetin satır parçaları
         const totalLines = 15;
         const totalChars = ayahs.reduce((sum, a) => sum + (a.textArabic ? a.textArabic.length : 1), 0);
+        const charsPerLine = Math.max(1, totalChars / totalLines);
 
-        let lineAyahMap = [];
-        let currentLine = 0;
+        let charOffset = 0;
+        state.ayahSpans = {};
 
-        ayahs.forEach((ayah, idx) => {
+        ayahs.forEach((ayah, aIdx) => {
             const charLen = ayah.textArabic ? ayah.textArabic.length : 1;
-            const lineSpan = Math.max(1, Math.round((charLen / totalChars) * totalLines));
-            for (let l = 0; l < lineSpan && currentLine < totalLines; l++) {
-                lineAyahMap.push(idx);
-                currentLine++;
+            const startChar = charOffset;
+            const endChar = charOffset + charLen;
+            charOffset = endChar;
+
+            const startLine = Math.min(totalLines - 1, Math.floor(startChar / charsPerLine));
+            const endLine = Math.min(totalLines - 1, Math.floor(Math.max(startChar, endChar - 1) / charsPerLine));
+
+            const spans = [];
+            for (let l = startLine; l <= endLine; l++) {
+                const lineStartChar = l * charsPerLine;
+                const lineEndChar = (l + 1) * charsPerLine;
+
+                const segStart = Math.max(startChar, lineStartChar);
+                const segEnd = Math.min(endChar, lineEndChar);
+                const segLen = Math.max(1, segEnd - segStart);
+
+                // Satır içindeki ilerleme oranı: 0.0 (satırın en sağı / Arapça başı) -> 1.0 (satırın en solu / Arapça sonu)
+                const startRatio = Math.max(0, Math.min(1, (segStart - lineStartChar) / charsPerLine));
+                const endRatio = Math.max(0, Math.min(1, (segEnd - lineStartChar) / charsPerLine));
+
+                spans.push({
+                    lineIndex: l,
+                    startRatio: startRatio,
+                    endRatio: endRatio,
+                    weight: segLen / charLen
+                });
             }
+
+            state.ayahSpans[aIdx] = spans.length > 0 ? spans : [{
+                lineIndex: startLine,
+                startRatio: 0,
+                endRatio: 1,
+                weight: 1
+            }];
         });
 
-        while (lineAyahMap.length < totalLines) {
-            lineAyahMap.push(ayahs.length - 1);
-        }
-        lineAyahMap = lineAyahMap.slice(0, totalLines);
-
+        // 15 satırlık overlay çizgilerini oluştur
         for (let i = 0; i < totalLines; i++) {
-            const ayahIdx = lineAyahMap[i];
-            const ayah = ayahs[ayahIdx];
+            let bestAyahIdx = 0;
+            let maxWeight = -1;
+            ayahs.forEach((_, aIdx) => {
+                const sp = (state.ayahSpans[aIdx] || []).find(s => s.lineIndex === i);
+                if (sp && sp.weight > maxWeight) {
+                    maxWeight = sp.weight;
+                    bestAyahIdx = aIdx;
+                }
+            });
+
+            const ayah = ayahs[bestAyahIdx] || ayahs[0];
             const lineEl = document.createElement('div');
             lineEl.className = 'ayah-overlay-line';
             lineEl.dataset.lineIndex = i;
-            lineEl.dataset.ayahIndex = ayahIdx;
+            lineEl.dataset.ayahIndex = bestAyahIdx;
             lineEl.title = `${ayah.surahNameTr} Suresi ${ayah.ayahNumber}. Ayet • Tıkla: Dinle & Meal`;
 
             lineEl.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.audioEngine.jumpToAyah(ayahIdx, true);
-                showAyahPopoverOnLine(e, ayahIdx);
+                window.audioEngine.jumpToAyah(bestAyahIdx, true);
+                showAyahPopoverOnLine(e, bestAyahIdx);
                 updateActiveAyahBanner(ayah);
-                highlightActiveAyah(ayahIdx);
+                highlightActiveAyah(bestAyahIdx);
             });
 
             overlay.appendChild(lineEl);
-        }
-
-        // Her ayetin hangi satırlara dağıldığını ve satır paylarını hesapla
-        state.ayahSpans = {};
-        for (let aIdx = 0; aIdx < ayahs.length; aIdx++) {
-            const lineIndices = [];
-            for (let l = 0; l < totalLines; l++) {
-                if (lineAyahMap[l] === aIdx) lineIndices.push(l);
-            }
-            if (lineIndices.length > 0) {
-                const total = lineIndices.length;
-                state.ayahSpans[aIdx] = lineIndices.map((lIdx) => ({
-                    lineIndex: lIdx,
-                    startPct: 6,
-                    endPct: 86,
-                    weight: 1 / total
-                }));
-            } else {
-                state.ayahSpans[aIdx] = [{
-                    lineIndex: 0,
-                    startPct: 6,
-                    endPct: 86,
-                    weight: 1
-                }];
-            }
         }
 
         // İlk ayet ile aktif banner, ses takipçisi ve grup seçicileri güncelle
@@ -820,7 +830,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const subSpans = (state.ayahSpans && state.ayahSpans[ayahIndex]) || [];
         let activeLineIndex = 0;
-        let rightPct = 6;
+        let lineRatio = 0;
 
         if (subSpans.length > 0) {
             const clampedProgress = Math.max(0, Math.min(0.999, progress));
@@ -841,26 +851,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             activeLineIndex = activeSpan.lineIndex;
-            rightPct = activeSpan.startPct + (spanProgress * (activeSpan.endPct - activeSpan.startPct));
+            lineRatio = activeSpan.startRatio + (spanProgress * (activeSpan.endRatio - activeSpan.startRatio));
         } else {
             const allLines = overlay.querySelectorAll('.ayah-overlay-line');
             activeLineIndex = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
-            rightPct = 6 + (progress * 80);
+            lineRatio = progress;
         }
 
         const targetLine = overlay.querySelector(`.ayah-overlay-line[data-line-index="${activeLineIndex}"]`);
         if (targetLine) {
-            const topOffset = targetLine.offsetTop + targetLine.offsetHeight - 6;
+            const lineLeft = targetLine.offsetLeft;
+            const lineWidth = targetLine.offsetWidth;
+            const lineTop = targetLine.offsetTop;
+            const lineHeight = targetLine.offsetHeight;
+
+            // 24px üçgen için Arapça sağdan sola doğru piksel pozisyonu:
+            // lineRatio = 0.0 -> ilk kelimenin tam altı (sağ kenar: "إِنَّ")
+            // lineRatio = 1.0 -> son kelimenin tam altı (sol kenar)
+            const usableWidth = Math.max(20, lineWidth - 32);
+            const posX = lineLeft + (usableWidth * (1 - lineRatio)) + 4;
+            // Kelimenin hemen altına oturan ibre ucu konumu
+            const posY = lineTop + lineHeight - 14;
 
             if (lastTrackedLineIndex !== -1 && lastTrackedLineIndex !== activeLineIndex) {
-                pointer.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.25, 1)';
+                pointer.style.transition = 'transform 0.06s ease-out';
             } else {
-                pointer.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.25, 1), right 0.08s linear';
+                pointer.style.transition = 'transform 0.1s linear';
             }
             lastTrackedLineIndex = activeLineIndex;
 
-            pointer.style.transform = `translateY(${topOffset}px)`;
-            pointer.style.right = `${rightPct}%`;
+            pointer.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
         }
     }
 

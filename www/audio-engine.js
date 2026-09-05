@@ -168,6 +168,10 @@ class AudioEngine {
         this.initAudioEvents();
     }
 
+    get isPlaying() {
+        return this.audio && !this.audio.paused && !this.audio.ended;
+    }
+
     initAudioEvents() {
         this.audio.addEventListener('ended', () => this.handleAyahEnded());
         this.audio.addEventListener('timeupdate', () => {
