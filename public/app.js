@@ -545,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvas = mushafDiyanetCanvas || document.getElementById('mushaf-diyanet-canvas');
         const img = mushafImage || document.getElementById('mushaf-image');
         const spinner = facsimileLoadingSpinner || document.getElementById('facsimile-loading-spinner');
-        const spinnerText = facsimileLoaderText || document.getElementById('facsimile-loader-text');
 
         // Rahle / Çift Sayfa Görünümü Elemanları
         const frameLeft = framePageLeft || document.getElementById('frame-page-left');
@@ -605,7 +604,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 1. IndexedDB Çevrim Dışı Depodan Kontrol Et (Offline First)
+        // 1. Yerel 604 Sayfalık Tam Veritabanından Anında (0ms) Yükle (Zero Latency)
+        if (window.QURAN_PAGES_DB && window.QURAN_PAGES_DB[pageNumber] && window.QURAN_PAGES_DB[pageNumber].length > 0) {
+            const dbAyahs = window.QURAN_PAGES_DB[pageNumber];
+            state.cache[cacheKey] = dbAyahs;
+            state.pageAyahs = dbAyahs;
+            buildDiyanetInteractiveOverlay(dbAyahs);
+            renderAyahsView(dbAyahs);
+            renderDrawerAyahs(dbAyahs);
+            setupAudioQueue();
+            return;
+        }
+
+        // 2. IndexedDB Çevrim Dışı Depodan Kontrol Et (Offline First)
         if (window.offlineEngine) {
             try {
                 const offlineAyahs = await window.offlineEngine.getPage(pageNumber, state.imlaMode);
@@ -623,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Ağdan Çek ve IndexedDB'ye Kaydet
+        // 3. Ağdan Çek ve IndexedDB'ye Kaydet (Gerekirse)
         try {
             const edition = state.imlaMode === 'diyanet' ? 'quran-simple-enhanced' : 'quran-uthmani';
             const [textRes, mealRes] = await Promise.all([
@@ -671,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateFallbackPage(pageNumber) {
-        const surah = QURAN_DATA.surahs.find(s => pageNumber >= s.startPage) || QURAN_DATA.surahs[0];
+        const surah = QURAN_DATA.surahs.slice().reverse().find(s => pageNumber >= s.startPage) || QURAN_DATA.surahs[0];
         const ayahs = [];
         for (let i = 1; i <= 6; i++) {
             ayahs.push({
@@ -738,9 +749,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             lineEl.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.audioEngine.jumpToAyah(ayahIdx);
+                window.audioEngine.jumpToAyah(ayahIdx, true);
                 showAyahPopoverOnLine(e, ayahIdx);
                 updateActiveAyahBanner(ayah);
+                highlightActiveAyah(ayahIdx);
             });
 
             lineEl.addEventListener('mouseenter', () => {
@@ -753,9 +765,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // İlk ayet ile aktif banner, okuma cetveli ve grup seçicileri güncelle
-        if (ayahs[0]) {
-            updateActiveAyahBanner(ayahs[0]);
-            highlightActiveAyah(0);
+        const curIdx = window.audioEngine ? (window.audioEngine.currentAyahIndex || 0) : 0;
+        if (ayahs[curIdx]) {
+            updateActiveAyahBanner(ayahs[curIdx]);
+            highlightActiveAyah(curIdx);
         }
         populateGroupSelectors(ayahs);
 
@@ -782,15 +795,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         ruler.style.display = 'flex';
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
-        if (overlay) {
+        const frame = framePageRight || document.getElementById('frame-page-right');
+        if (overlay && frame) {
             const lines = overlay.querySelectorAll('.ayah-overlay-line');
-            if (lines && lines[lineIndex]) {
-                const targetLine = lines[lineIndex];
-                const topPos = targetLine.offsetTop;
-                const height = targetLine.offsetHeight;
-                ruler.style.transform = `translateY(${topPos}px)`;
-                ruler.style.height = `${height}px`;
-                return;
+            if (lines && lines.length > 0) {
+                const clampedIdx = Math.max(0, Math.min(lines.length - 1, lineIndex));
+                const targetLine = lines[clampedIdx];
+                if (targetLine) {
+                    const frameRect = frame.getBoundingClientRect();
+                    const lineRect = targetLine.getBoundingClientRect();
+                    if (frameRect.height > 0) {
+                        const topOffset = lineRect.top - frameRect.top;
+                        ruler.style.transform = `translateY(${topOffset}px)`;
+                        ruler.style.height = `${lineRect.height}px`;
+                        return;
+                    }
+                }
             }
         }
         const percent = Math.min(14, Math.max(0, lineIndex)) * (100 / 15);
@@ -832,12 +852,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (overlay) {
             const lines = overlay.querySelectorAll('.ayah-overlay-line');
             let activeLineIdx = 0;
+            let found = false;
             lines.forEach(line => {
                 const aIdx = parseInt(line.dataset.ayahIndex, 10);
                 const isActive = (aIdx === index);
                 line.classList.toggle('active-reading', isActive);
-                if (isActive) {
+                if (isActive && !found) {
                     activeLineIdx = parseInt(line.dataset.lineIndex, 10) || 0;
+                    found = true;
                 }
             });
             updateReadingRuler(activeLineIdx);

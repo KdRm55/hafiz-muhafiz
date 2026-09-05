@@ -1430,8 +1430,8 @@ body {
 /* Hafızlık Okuma Cetveli (Focus Reading Ruler) */
 .mushaf-reading-ruler {
     position: absolute;
-    left: 3.5%;
-    right: 3.5%;
+    left: 2.5%;
+    right: 2.5%;
     height: 6.66%;
     z-index: 12;
     pointer-events: none;
@@ -1439,14 +1439,17 @@ body {
     align-items: center;
     justify-content: flex-end;
     transform: translateY(0);
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.2s ease;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), height 0.2s ease, opacity 0.2s ease;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.04) 0%, rgba(212, 175, 55, 0.16) 50%, rgba(212, 175, 55, 0.04) 100%);
+    border-top: 1px solid rgba(255, 215, 0, 0.4);
     border-bottom: 2px solid var(--gold-bright);
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35);
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.35), inset 0 0 10px rgba(212, 175, 55, 0.1);
+    border-radius: 4px;
 }
 
 .mushaf-reading-ruler .ruler-indicator {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold-primary) 100%);
     color: #04140d;
     border-radius: 50%;
@@ -1454,8 +1457,8 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
-    box-shadow: 0 0 10px var(--gold-glow);
-    margin-right: -11px;
+    box-shadow: 0 0 12px var(--gold-glow);
+    margin-right: -12px;
     animation: ruler-pulse 1.6s infinite ease-in-out;
 }
 
