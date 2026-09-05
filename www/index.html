@@ -547,9 +547,20 @@
                                     <!-- 4. Katman: Hafızlık Ezber / Perdeleme Maskesi (Örtü) -->
                                     <div id="mushaf-mask-overlay" class="mushaf-mask-layer" style="display:none;"></div>
 
-                                    <!-- 5. Katman: Canlı Ses Takip İbresi (Audio Tracker Pointer) -->
+                                    <!-- 5. Katman: Canlı Ses Takip İbresi (Zarif SVG Ok / Üçgen İbre) -->
                                     <div id="mushaf-audio-pointer" class="mushaf-audio-pointer" style="display:none;">
-                                        <div class="pointer-triangle"><i class="fa-solid fa-caret-left"></i></div>
+                                        <div class="pointer-arrow-marker">
+                                            <svg class="pointer-svg" viewBox="0 0 24 24">
+                                                <defs>
+                                                    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                        <stop offset="0%" stop-color="#fff9cc" />
+                                                        <stop offset="50%" stop-color="#ffd700" />
+                                                        <stop offset="100%" stop-color="#d4af37" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <polygon points="21,3 5,12 21,21" fill="url(#goldGrad)" stroke="#ffffff" stroke-width="0.8"/>
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
 

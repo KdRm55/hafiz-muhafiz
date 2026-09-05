@@ -330,13 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setupNetworkStatus();
         populateSelectors();
         populateChainSelectors();
+        loadLesson(state.currentJuz, state.currentRotation);
         bindEvents();
         setupAudioEngineCallbacks();
         setMushafFont(state.mushafFont);
         if (headerReciterName && window.audioEngine && window.audioEngine.currentReciter) {
             headerReciterName.textContent = window.audioEngine.currentReciter.name.replace(/\s*\(.*?\)\s*/g, '');
         }
-        loadLesson(state.currentJuz, state.currentRotation);
         updateHeaderStats();
         showDashboard();
     }
@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Canlı Ses Takip İbresini (Zarif Ok/Üçgen) Okunan Satıra Akıcı Şekilde Konumlandırır
+     * Canlı Ses Takip İbresini (Zarif SVG Ok/Üçgen) Okunan Satıra Akıcı Şekilde Konumlandırır
      */
     function updateAudioTrackerPointer(lineIndex, isVisible = true) {
         const pointer = mushafAudioPointer || document.getElementById('mushaf-audio-pointer');
@@ -795,18 +795,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const clampedIdx = Math.max(0, Math.min(lines.length - 1, lineIndex));
                 const targetLine = lines[clampedIdx];
                 if (targetLine) {
-                    const frameRect = frame.getBoundingClientRect();
-                    const lineRect = targetLine.getBoundingClientRect();
-                    if (frameRect.height > 0) {
-                        const topOffset = (lineRect.top - frameRect.top) + (lineRect.height / 2) - 14;
-                        pointer.style.transform = `translateY(${topOffset}px)`;
-                        return;
-                    }
+                    const topOffset = targetLine.offsetTop + (targetLine.offsetHeight / 2) - 16;
+                    pointer.style.transform = `translateY(${topOffset}px)`;
+                    return;
                 }
             }
         }
-        const percent = Math.min(14, Math.max(0, lineIndex)) * (100 / 15);
-        pointer.style.transform = `translateY(${percent}%)`;
+        const frameHeight = frame ? frame.clientHeight : 700;
+        const lineH = frameHeight / 15;
+        const topOffset = (Math.max(0, Math.min(14, lineIndex)) * lineH) + (lineH / 2) - 16;
+        pointer.style.transform = `translateY(${topOffset}px)`;
     }
 
     function toggleSpreadMode() {
@@ -1217,14 +1215,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnBrandHome) btnBrandHome.addEventListener('click', () => showDashboard());
 
         // Cüz & Dönüş Değişimi
-        selectJuz.addEventListener('change', (e) => {
-            loadLesson(e.target.value, state.currentRotation);
-            updateDashboardInfo();
-        });
-        selectRotation.addEventListener('change', (e) => {
-            loadLesson(state.currentJuz, e.target.value);
-            updateDashboardInfo();
-        });
+        if (selectJuz) {
+            selectJuz.addEventListener('change', (e) => {
+                loadLesson(e.target.value, state.currentRotation);
+                updateDashboardInfo();
+            });
+        }
+        if (selectRotation) {
+            selectRotation.addEventListener('change', (e) => {
+                loadLesson(state.currentJuz, e.target.value);
+                updateDashboardInfo();
+            });
+        }
 
         // Mod Seçimi (Sadece Ham Ezber ve Dönüş Haslama)
         if (modeHam) modeHam.addEventListener('click', () => setMode('ham'));
@@ -1259,26 +1261,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Sayfa Değiştirme
-        btnPrevPage.addEventListener('click', () => {
-            if (state.currentPage > 1) loadPageData(state.currentPage - 1);
-        });
-        btnNextPage.addEventListener('click', () => {
-            if (state.currentPage < 604) loadPageData(state.currentPage + 1);
-        });
+        if (btnPrevPage) {
+            btnPrevPage.addEventListener('click', () => {
+                if (state.currentPage > 1) loadPageData(state.currentPage - 1);
+            });
+        }
+        if (btnNextPage) {
+            btnNextPage.addEventListener('click', () => {
+                if (state.currentPage < 604) loadPageData(state.currentPage + 1);
+            });
+        }
 
         // Zoom Kontrolleri
-        btnZoomIn.addEventListener('click', () => {
-            if (state.zoomLevel < 150) {
-                state.zoomLevel += 10;
-                applyZoom();
-            }
-        });
-        btnZoomOut.addEventListener('click', () => {
-            if (state.zoomLevel > 80) {
-                state.zoomLevel -= 10;
-                applyZoom();
-            }
-        });
+        if (btnZoomIn) {
+            btnZoomIn.addEventListener('click', () => {
+                if (state.zoomLevel < 150) {
+                    state.zoomLevel += 10;
+                    applyZoom();
+                }
+            });
+        }
+        if (btnZoomOut) {
+            btnZoomOut.addEventListener('click', () => {
+                if (state.zoomLevel > 80) {
+                    state.zoomLevel -= 10;
+                    applyZoom();
+                }
+            });
+        }
 
         // Kağıt Teması Seçimi
         paperThemeBtns.forEach(btn => {
@@ -1291,12 +1301,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Meal Çekmecesi Aç/Kapa
-        btnToggleTranslationDrawer.addEventListener('click', () => {
-            translationDrawer.classList.toggle('open');
-        });
-        btnCloseDrawer.addEventListener('click', () => {
-            translationDrawer.classList.remove('open');
-        });
+        if (btnToggleTranslationDrawer) {
+            btnToggleTranslationDrawer.addEventListener('click', () => {
+                if (translationDrawer) translationDrawer.classList.toggle('open');
+            });
+        }
+        if (btnCloseDrawer) {
+            btnCloseDrawer.addEventListener('click', () => {
+                if (translationDrawer) translationDrawer.classList.remove('open');
+            });
+        }
 
         // Hat Seçimi Dropdown
         const selectMushafFont = document.getElementById('select-mushaf-font');
@@ -1533,28 +1547,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Dersi Tamamla
-        btnToggleCompleted.addEventListener('click', () => {
-            window.hafizEngine.toggleCellCompleted(state.currentJuz, state.currentRotation);
-            updateCompletionButton();
-            updateHeaderStats();
-        });
+        if (btnToggleCompleted) {
+            btnToggleCompleted.addEventListener('click', () => {
+                window.hafizEngine.toggleCellCompleted(state.currentJuz, state.currentRotation);
+                updateCompletionButton();
+                updateHeaderStats();
+            });
+        }
 
         // Oynatıcı Kontrolleri
-        btnDeckPlay.addEventListener('click', () => window.audioEngine.togglePlay());
-        btnPrevAyah.addEventListener('click', () => window.audioEngine.prevAyah());
-        btnNextAyah.addEventListener('click', () => window.audioEngine.nextAyah());
+        if (btnDeckPlay) btnDeckPlay.addEventListener('click', () => window.audioEngine.togglePlay());
+        if (btnPrevAyah) btnPrevAyah.addEventListener('click', () => window.audioEngine.prevAyah());
+        if (btnNextAyah) btnNextAyah.addEventListener('click', () => window.audioEngine.nextAyah());
 
-        progressTrack.addEventListener('click', (e) => {
-            const rect = progressTrack.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
-            if (window.audioEngine.audio.duration) {
-                window.audioEngine.audio.currentTime = pos * window.audioEngine.audio.duration;
-            }
-        });
+        if (progressTrack) {
+            progressTrack.addEventListener('click', (e) => {
+                const rect = progressTrack.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                if (window.audioEngine.audio.duration) {
+                    window.audioEngine.audio.currentTime = pos * window.audioEngine.audio.duration;
+                }
+            });
+        }
 
-        selectRepeats.addEventListener('change', (e) => window.audioEngine.setRepeats(e.target.value));
-        selectSpeed.addEventListener('change', (e) => window.audioEngine.setPlaybackRate(e.target.value));
-        selectGap.addEventListener('change', (e) => window.audioEngine.setPauseGap(e.target.value));
+        if (selectRepeats) selectRepeats.addEventListener('change', (e) => window.audioEngine.setRepeats(e.target.value));
+        if (selectSpeed) selectSpeed.addEventListener('change', (e) => window.audioEngine.setPlaybackRate(e.target.value));
+        if (selectGap) selectGap.addEventListener('change', (e) => window.audioEngine.setPauseGap(e.target.value));
 
         // Sayfa Gezginine Tıklayınca Hızlı Atlama
         if (badgePageNum) {
@@ -1582,16 +1600,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setupQuickSearch();
 
         // Modallar
-        btnOpenMatrix.addEventListener('click', () => openMatrixModal());
-        btnOpenReciters.addEventListener('click', () => openRecitersModal());
-        btnOpenStats.addEventListener('click', () => openStatsModal());
+        if (btnOpenMatrix) btnOpenMatrix.addEventListener('click', () => openMatrixModal());
+        if (btnOpenReciters) btnOpenReciters.addEventListener('click', () => openRecitersModal());
+        if (btnOpenStats) btnOpenStats.addEventListener('click', () => openStatsModal());
         if (btnOpenShortcuts && modalShortcuts) {
             btnOpenShortcuts.addEventListener('click', () => modalShortcuts.classList.add('open'));
         }
         if (btnOpenInstall && modalInstall) {
             btnOpenInstall.addEventListener('click', () => modalInstall.classList.add('open'));
         }
-        deckReciterAvatar.addEventListener('click', () => openRecitersModal());
+        if (deckReciterAvatar) deckReciterAvatar.addEventListener('click', () => openRecitersModal());
 
         // PWA Yükleme Yakalayıcı
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -1829,16 +1847,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modeHam) modeHam.classList.add('active');
             if (cardStandardLesson) cardStandardLesson.style.display = 'flex';
             if (panelChainHaslama) panelChainHaslama.style.display = 'none';
-            state.currentPage = state.lesson.hamPage;
-            selectRepeats.value = "5";
-            window.audioEngine.setRepeats(5);
+            state.currentPage = (state.lesson && state.lesson.hamPage) ? state.lesson.hamPage : (state.currentPage || 474);
+            if (selectRepeats) selectRepeats.value = "5";
+            if (window.audioEngine) window.audioEngine.setRepeats(5);
             loadPageData(state.currentPage);
         } else if (mode === 'chain-has') {
             if (modeChainHas) modeChainHas.classList.add('active');
             if (cardStandardLesson) cardStandardLesson.style.display = 'none';
             if (panelChainHaslama) panelChainHaslama.style.display = 'flex';
-            selectRepeats.value = "1";
-            window.audioEngine.setRepeats(1);
+            if (selectRepeats) selectRepeats.value = "1";
+            if (window.audioEngine) window.audioEngine.setRepeats(1);
             loadChainHaslama(state.chainHaslama.targetRotation);
         }
     }
