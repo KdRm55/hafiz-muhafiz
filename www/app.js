@@ -769,15 +769,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             rawWords.forEach((wordText, wIdx) => {
                 const wLen = wordText.length;
-                const wCenter = wCharPos + (wLen / 2);
+                const wStart = wCharPos;
+                const wEnd = wCharPos + wLen;
+                const wCenter = wStart + (wLen / 2);
                 const wLine = Math.min(totalLines - 1, Math.floor(wCenter / charsPerLine));
                 const lineStartChar = wLine * charsPerLine;
-                const wRatio = Math.max(0, Math.min(1, (wCenter - lineStartChar) / charsPerLine));
+
+                const startRatio = Math.max(0, Math.min(1, (wStart - lineStartChar) / charsPerLine));
+                const endRatio = Math.max(0, Math.min(1, (wEnd - lineStartChar) / charsPerLine));
+                const centerRatio = Math.max(0, Math.min(1, (wCenter - lineStartChar) / charsPerLine));
 
                 wordEntries.push({
                     wordIndex: wIdx,
                     lineIndex: wLine,
-                    ratio: wRatio,
+                    ratio: centerRatio,
+                    startRatio: startRatio,
+                    endRatio: endRatio,
                     wordText: wordText
                 });
 
@@ -863,7 +870,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const clampedWordIdx = Math.max(0, Math.min(ayahWords.length - 1, activeWordIndex));
             const wordInfo = ayahWords[clampedWordIdx];
             activeLineIndex = wordInfo.lineIndex;
-            lineRatio = wordInfo.ratio;
+            const intraProg = Math.max(0, Math.min(1, activeWordProgress || 0));
+            // Kelime içinde Arapça sağdan sola tecvid akışı:
+            if (wordInfo.startRatio !== undefined && wordInfo.endRatio !== undefined) {
+                lineRatio = wordInfo.startRatio + (intraProg * (wordInfo.endRatio - wordInfo.startRatio));
+            } else {
+                lineRatio = wordInfo.ratio;
+            }
         } else {
             // 2. Yedek: Ayet parçaları üzerinden akıcı hesap
             const subSpans = (state.ayahSpans && state.ayahSpans[ayahIndex]) || [];
@@ -908,9 +921,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const posY = lineTop + lineHeight - 14;
 
             if (lastTrackedLineIndex !== -1 && lastTrackedLineIndex !== activeLineIndex) {
-                pointer.style.transition = 'transform 0.05s ease-out';
+                pointer.style.transition = 'none';
             } else {
-                pointer.style.transition = 'transform 0.12s cubic-bezier(0.2, 0.8, 0.25, 1)';
+                pointer.style.transition = 'transform 0.03s linear';
             }
             lastTrackedLineIndex = activeLineIndex;
 

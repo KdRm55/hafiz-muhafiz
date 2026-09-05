@@ -166,6 +166,7 @@ class AudioEngine {
         this.onGroupUpdate = null;
 
         this.currentAyahSegments = null;
+        this._rafId = null;
         this.initAudioEvents();
     }
 
@@ -173,57 +174,84 @@ class AudioEngine {
         return this.audio && !this.audio.paused && !this.audio.ended;
     }
 
-    initAudioEvents() {
-        this.audio.addEventListener('ended', () => this.handleAyahEnded());
-        this.audio.addEventListener('timeupdate', () => {
-            const curTime = this.audio.currentTime;
-            const dur = this.audio.duration || 0;
+    startAnimationLoop() {
+        this.stopAnimationLoop();
+        const tick = () => {
+            if (this.isPlaying) {
+                this.processTimeUpdate();
+                this._rafId = requestAnimationFrame(tick);
+            }
+        };
+        this._rafId = requestAnimationFrame(tick);
+    }
 
-            let activeWordIndex = -1;
-            let activeWordProgress = 0;
-            const segments = this.currentAyahSegments;
+    stopAnimationLoop() {
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId);
+            this._rafId = null;
+        }
+    }
 
-            if (segments && segments.length > 0) {
-                for (let i = 0; i < segments.length; i++) {
-                    const seg = segments[i];
-                    if (curTime >= seg.start && curTime <= seg.end) {
-                        activeWordIndex = seg.wordIndex !== undefined ? seg.wordIndex : i;
-                        const span = Math.max(0.01, seg.end - seg.start);
-                        activeWordProgress = Math.max(0, Math.min(1, (curTime - seg.start) / span));
-                        break;
-                    } else if (curTime < seg.start && i === 0) {
-                        activeWordIndex = 0;
-                        activeWordProgress = 0;
-                        break;
-                    } else if (curTime > seg.end && (i === segments.length - 1 || (segments[i + 1] && curTime < segments[i + 1].start))) {
-                        activeWordIndex = seg.wordIndex !== undefined ? seg.wordIndex : i;
-                        activeWordProgress = 1;
-                        break;
-                    }
+    processTimeUpdate() {
+        const curTime = this.audio.currentTime;
+        const dur = this.audio.duration || 0;
+
+        let activeWordIndex = -1;
+        let activeWordProgress = 0;
+        const segments = this.currentAyahSegments;
+
+        if (segments && segments.length > 0) {
+            for (let i = 0; i < segments.length; i++) {
+                const seg = segments[i];
+                if (curTime >= seg.start && curTime <= seg.end) {
+                    activeWordIndex = seg.wordIndex !== undefined ? seg.wordIndex : i;
+                    const span = Math.max(0.01, seg.end - seg.start);
+                    activeWordProgress = Math.max(0, Math.min(1, (curTime - seg.start) / span));
+                    break;
+                } else if (curTime < seg.start && i === 0) {
+                    activeWordIndex = 0;
+                    activeWordProgress = 0;
+                    break;
+                } else if (curTime > seg.end && (i === segments.length - 1 || (segments[i + 1] && curTime < segments[i + 1].start))) {
+                    activeWordIndex = seg.wordIndex !== undefined ? seg.wordIndex : i;
+                    activeWordProgress = 1;
+                    break;
                 }
             }
+        }
 
-            if (this.onTimeUpdate) {
-                this.onTimeUpdate(curTime, dur, activeWordIndex, (segments ? segments.length : 0), activeWordProgress);
-            }
+        if (this.onTimeUpdate) {
+            this.onTimeUpdate(curTime, dur, activeWordIndex, (segments ? segments.length : 0), activeWordProgress);
+        }
 
-            // Dilimleme / Parça Modu Zaman Kontrolü
-            if (this.sliceMode && this.audio.duration && !this.isWaitingGap && !this.isCalculatingSlices) {
-                this.checkSliceProgress();
-            }
+        // Dilimleme / Parça Modu Zaman Kontrolü
+        if (this.sliceMode && this.audio.duration && !this.isWaitingGap && !this.isCalculatingSlices) {
+            this.checkSliceProgress();
+        }
+    }
 
+    initAudioEvents() {
+        this.audio.addEventListener('ended', () => {
+            this.stopAnimationLoop();
+            this.handleAyahEnded();
+        });
+        this.audio.addEventListener('timeupdate', () => {
+            this.processTimeUpdate();
             if (window.hafizEngine && !this.audio.paused) {
                 window.hafizEngine.addListeningTime(0.25);
             }
         });
 
         this.audio.addEventListener('play', () => {
+            this.startAnimationLoop();
             if (this.onStateChange) this.onStateChange(true);
         });
         this.audio.addEventListener('pause', () => {
+            this.stopAnimationLoop();
             if (this.onStateChange && !this.isWaitingGap) this.onStateChange(false);
         });
         this.audio.addEventListener('error', (e) => {
+            this.stopAnimationLoop();
             console.warn('Ses yüklenirken hata:', e);
             setTimeout(() => this.nextAyah(), 1000);
         });
@@ -702,6 +730,14 @@ class AudioEngine {
             this.fetchVerseWordSegments(ayah.surahNumber, ayah.ayahNumber).then(segments => {
                 this.currentAyahSegments = segments;
             });
+            // Bir sonraki ayetin kelime zamanlamalarını önceden hafızaya al (0 gecikme)
+            const nextIdx = this.currentAyahIndex + 1;
+            if (this.ayahQueue && this.ayahQueue[nextIdx]) {
+                const nextA = this.ayahQueue[nextIdx];
+                if (nextA.surahNumber && nextA.ayahNumber) {
+                    this.fetchVerseWordSegments(nextA.surahNumber, nextA.ayahNumber);
+                }
+            }
         }
 
         // Dilimleme Modu Açıksa Yeni Ayet İçin Dilimleri Hesapla
