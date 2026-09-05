@@ -723,6 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let charOffset = 0;
         state.ayahSpans = {};
+        state.ayahWordsMap = {};
 
         ayahs.forEach((ayah, aIdx) => {
             const charLen = ayah.textArabic ? ayah.textArabic.length : 1;
@@ -760,6 +761,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 endRatio: 1,
                 weight: 1
             }];
+
+            // Kelime bazlı milisaniye koordinat haritası (Quran.com API Senkronizasyonu İçin)
+            const rawWords = (ayah.textArabic || '').trim().split(/\s+/).filter(w => w.length > 0);
+            const wordEntries = [];
+            let wCharPos = startChar;
+
+            rawWords.forEach((wordText, wIdx) => {
+                const wLen = wordText.length;
+                const wCenter = wCharPos + (wLen / 2);
+                const wLine = Math.min(totalLines - 1, Math.floor(wCenter / charsPerLine));
+                const lineStartChar = wLine * charsPerLine;
+                const wRatio = Math.max(0, Math.min(1, (wCenter - lineStartChar) / charsPerLine));
+
+                wordEntries.push({
+                    wordIndex: wIdx,
+                    lineIndex: wLine,
+                    ratio: wRatio,
+                    wordText: wordText
+                });
+
+                wCharPos += wLen + 1;
+            });
+
+            state.ayahWordsMap[aIdx] = wordEntries;
         });
 
         // 15 satırlık overlay çizgilerini oluştur
@@ -816,7 +841,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * YouTube Mukabele Tarzı Canlı Yeşil Takip Üçgenini Okunan Kelime/Satır Altına Akıcı Şekilde Konumlandırır
      */
-    function updateMukabeleTracker(ayahIndex, progress = 0, isVisible = true) {
+    function updateMukabeleTracker(ayahIndex, progress = 0, isVisible = true, activeWordIndex = -1, activeWordProgress = 0) {
         const pointer = mushafAudioPointer || document.getElementById('mushaf-audio-pointer');
         if (!pointer) return;
         if (!isVisible) {
@@ -828,34 +853,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = mushafInteractiveOverlay || document.getElementById('mushaf-interactive-overlay');
         if (!overlay) return;
 
-        const subSpans = (state.ayahSpans && state.ayahSpans[ayahIndex]) || [];
         let activeLineIndex = 0;
         let lineRatio = 0;
 
-        if (subSpans.length > 0) {
-            const clampedProgress = Math.max(0, Math.min(0.999, progress));
-            let cumWeight = 0;
-            let activeSpan = subSpans[0];
-            let spanProgress = 0;
+        const ayahWords = (state.ayahWordsMap && state.ayahWordsMap[ayahIndex]) || [];
 
-            for (let s = 0; s < subSpans.length; s++) {
-                const span = subSpans[s];
-                const nextCum = cumWeight + span.weight;
-                if (clampedProgress <= nextCum || s === subSpans.length - 1) {
-                    activeSpan = span;
-                    const spanRange = span.weight > 0 ? span.weight : (1 / subSpans.length);
-                    spanProgress = Math.max(0, Math.min(1, (clampedProgress - cumWeight) / spanRange));
-                    break;
-                }
-                cumWeight = nextCum;
-            }
-
-            activeLineIndex = activeSpan.lineIndex;
-            lineRatio = activeSpan.startRatio + (spanProgress * (activeSpan.endRatio - activeSpan.startRatio));
+        // 1. Milisaniye Seviyesinde Kelime Senkronizasyonu (Kâri ile Birebir Canlı Eşzamanlama)
+        if (activeWordIndex >= 0 && ayahWords.length > 0) {
+            const clampedWordIdx = Math.max(0, Math.min(ayahWords.length - 1, activeWordIndex));
+            const wordInfo = ayahWords[clampedWordIdx];
+            activeLineIndex = wordInfo.lineIndex;
+            lineRatio = wordInfo.ratio;
         } else {
-            const allLines = overlay.querySelectorAll('.ayah-overlay-line');
-            activeLineIndex = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
-            lineRatio = progress;
+            // 2. Yedek: Ayet parçaları üzerinden akıcı hesap
+            const subSpans = (state.ayahSpans && state.ayahSpans[ayahIndex]) || [];
+            if (subSpans.length > 0) {
+                const clampedProgress = Math.max(0, Math.min(0.999, progress));
+                let cumWeight = 0;
+                let activeSpan = subSpans[0];
+                let spanProgress = 0;
+
+                for (let s = 0; s < subSpans.length; s++) {
+                    const span = subSpans[s];
+                    const nextCum = cumWeight + span.weight;
+                    if (clampedProgress <= nextCum || s === subSpans.length - 1) {
+                        activeSpan = span;
+                        const spanRange = span.weight > 0 ? span.weight : (1 / subSpans.length);
+                        spanProgress = Math.max(0, Math.min(1, (clampedProgress - cumWeight) / spanRange));
+                        break;
+                    }
+                    cumWeight = nextCum;
+                }
+
+                activeLineIndex = activeSpan.lineIndex;
+                lineRatio = activeSpan.startRatio + (spanProgress * (activeSpan.endRatio - activeSpan.startRatio));
+            } else {
+                const allLines = overlay.querySelectorAll('.ayah-overlay-line');
+                activeLineIndex = Math.max(0, Math.min(allLines.length - 1, ayahIndex));
+                lineRatio = progress;
+            }
         }
 
         const targetLine = overlay.querySelector(`.ayah-overlay-line[data-line-index="${activeLineIndex}"]`);
@@ -866,17 +902,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const lineHeight = targetLine.offsetHeight;
 
             // 24px üçgen için Arapça sağdan sola doğru piksel pozisyonu:
-            // lineRatio = 0.0 -> ilk kelimenin tam altı (sağ kenar: "إِنَّ")
-            // lineRatio = 1.0 -> son kelimenin tam altı (sol kenar)
             const usableWidth = Math.max(20, lineWidth - 32);
             const posX = lineLeft + (usableWidth * (1 - lineRatio)) + 4;
             // Kelimenin hemen altına oturan ibre ucu konumu
             const posY = lineTop + lineHeight - 14;
 
             if (lastTrackedLineIndex !== -1 && lastTrackedLineIndex !== activeLineIndex) {
-                pointer.style.transition = 'transform 0.06s ease-out';
+                pointer.style.transition = 'transform 0.05s ease-out';
             } else {
-                pointer.style.transition = 'transform 0.1s linear';
+                pointer.style.transition = 'transform 0.12s cubic-bezier(0.2, 0.8, 0.25, 1)';
             }
             lastTrackedLineIndex = activeLineIndex;
 
@@ -1210,7 +1244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deckPlayIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
         };
 
-        window.audioEngine.onTimeUpdate = (current, duration) => {
+        window.audioEngine.onTimeUpdate = (current, duration, activeWordIndex, wordCount, wordProgress) => {
             timeCurrent.textContent = formatTime(current);
             timeDuration.textContent = formatTime(duration);
             const pct = duration > 0 ? (current / duration) * 100 : 0;
@@ -1218,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.audioEngine && window.audioEngine.isPlaying) {
                 const curIdx = window.audioEngine.currentAyahIndex || 0;
                 const progress = duration > 0 ? (current / duration) : 0;
-                updateMukabeleTracker(curIdx, progress, true);
+                updateMukabeleTracker(curIdx, progress, true, activeWordIndex, wordProgress);
             }
         };
 

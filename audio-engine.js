@@ -165,6 +165,7 @@ class AudioEngine {
         this.onSliceUpdate = null;
         this.onGroupUpdate = null;
 
+        this.currentAyahSegments = null;
         this.initAudioEvents();
     }
 
@@ -175,8 +176,35 @@ class AudioEngine {
     initAudioEvents() {
         this.audio.addEventListener('ended', () => this.handleAyahEnded());
         this.audio.addEventListener('timeupdate', () => {
+            const curTime = this.audio.currentTime;
+            const dur = this.audio.duration || 0;
+
+            let activeWordIndex = -1;
+            let activeWordProgress = 0;
+            const segments = this.currentAyahSegments;
+
+            if (segments && segments.length > 0) {
+                for (let i = 0; i < segments.length; i++) {
+                    const seg = segments[i];
+                    if (curTime >= seg.start && curTime <= seg.end) {
+                        activeWordIndex = seg.wordIndex !== undefined ? seg.wordIndex : i;
+                        const span = Math.max(0.01, seg.end - seg.start);
+                        activeWordProgress = Math.max(0, Math.min(1, (curTime - seg.start) / span));
+                        break;
+                    } else if (curTime < seg.start && i === 0) {
+                        activeWordIndex = 0;
+                        activeWordProgress = 0;
+                        break;
+                    } else if (curTime > seg.end && (i === segments.length - 1 || (segments[i + 1] && curTime < segments[i + 1].start))) {
+                        activeWordIndex = seg.wordIndex !== undefined ? seg.wordIndex : i;
+                        activeWordProgress = 1;
+                        break;
+                    }
+                }
+            }
+
             if (this.onTimeUpdate) {
-                this.onTimeUpdate(this.audio.currentTime, this.audio.duration || 0);
+                this.onTimeUpdate(curTime, dur, activeWordIndex, (segments ? segments.length : 0), activeWordProgress);
             }
 
             // Dilimleme / Parça Modu Zaman Kontrolü
@@ -667,6 +695,14 @@ class AudioEngine {
         const audioUrl = this.getAyahAudioUrl(ayah.surahNumber, ayah.ayahNumber);
         this.audio.src = audioUrl;
         this.audio.playbackRate = this.playbackRate;
+
+        // Kelime Seviyesi Milisaniye Senkronizasyonu (Quran.com API)
+        this.currentAyahSegments = null;
+        if (ayah.surahNumber && ayah.ayahNumber) {
+            this.fetchVerseWordSegments(ayah.surahNumber, ayah.ayahNumber).then(segments => {
+                this.currentAyahSegments = segments;
+            });
+        }
 
         // Dilimleme Modu Açıksa Yeni Ayet İçin Dilimleri Hesapla
         if (this.sliceMode) {
